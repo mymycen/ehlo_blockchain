@@ -36,9 +36,9 @@ contract Colloquium {
   	voting = Voting({
   		subject_addr: subject,
   		proposer_addr: msg.sender,
-		add: add,
-		approvals: 0,
-		rejections: 0
+		  add: add,
+		  approvals: 0,
+		  rejections: 0
   	});
   }
 
@@ -62,7 +62,7 @@ contract Colloquium {
   	// fixed points are not yet implemented:
   	// ufixed(voting.approvals) / ufixed(get_member_count()) > 0.5
   	uint positiv_voting_result = 0;
-	uint negativ_voting_result = 0;
+	  uint negativ_voting_result = 0;
 
   	if(voting.approvals != 0) {
   	  positiv_voting_result = get_member_count() / voting.approvals;
@@ -90,14 +90,14 @@ contract Colloquium {
   	voting = Voting({
   		subject_addr: 0,
   		proposer_addr: 0,
-		add: false,
-		approvals: 0,
-		rejections: 0
+		  add: false,
+		  approvals: 0,
+		  rejections: 0
   	});
-	// clear voting table
-	for(uint i = 0; i < member_keys.length; i++) {
-		delete voting.has_voted[member_keys[i]];
-	}
+	  // clear voting table
+	  for(uint i = 0; i < member_keys.length; i++) {
+	  	delete voting.has_voted[member_keys[i]];
+	  }
   }
 
   function add_member(address addr) internal {
@@ -116,15 +116,15 @@ contract Colloquium {
   	  // is removed we need to manual balance the list
   	  bool found = false;
 	  for(uint i = 0; i<member_keys.length; i++) {
-	  	if(found) {
-	  		// shift all entries one entry done
-	  		member_keys[i-1] = member_keys[i];
-	  	}
-
-	  	if(member_keys[i] == addr) {
-	  		// element found we want to replace
-	  		found = true;
-	  	}
+	  	  if(found) {
+	  	  	// shift all entries one entry done
+	  	  	member_keys[i-1] = member_keys[i];
+	  	  }
+  
+  	  	  if(member_keys[i] == addr) {
+  	  	  	// element found we want to replace
+  	  	  	found = true;
+	  	  }
   	  }
   	  // delete the last entry in the list (is duplicated to the pre-last element)
   	  // decrement the length counter

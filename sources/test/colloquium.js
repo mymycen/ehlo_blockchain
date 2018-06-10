@@ -1,6 +1,6 @@
-var Colloquium = artifacts.require("./Colloquium.sol");
+var Colloquium = artifacts.require("./ColloquiumUser.sol");
 
-contract('Colloquium', function(accounts) {
+contract('ColloquiumUser', function(accounts) {
 
   it("no voting process running", function() {
     return Colloquium.deployed().then(function(instance) {

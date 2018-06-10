@@ -12,7 +12,10 @@ class App extends Component {
     super(props)
 
     this.state = {
-      storageValue: 0,
+      storageValue: 0
+    }
+
+    this.props = {
       web3: null,
       ColloquiumInstance: null,
       defaultAccount: null
@@ -49,7 +52,7 @@ class App extends Component {
 
     const contract = require('truffle-contract')
     const Colloquium = contract(ColloquiumContract)
-    Colloquium.setProvider(this.state.web3.currentProvider)
+    Colloquium.setProvider(this.props.web3.currentProvider)
 
     // Declaring this for later so we can chain functions on Colloquium.
 

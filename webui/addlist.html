@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="waitinglist" content="width=device-width, initial-scale=1">
+<style>
+body {font-family: Arial, Helvetica, sans-serif;}
+
+input[type=text], select, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    resize: vertical;
+}
+
+.button {
+  font: bold 11px Arial;
+  text-decoration: none;
+  background-color: #4CAF50;
+  color:  white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type=submit] {
+    font: bold 11px Arial;
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+input[type=submit]:hover {
+    background-color: #45a049;
+}
+
+.container {
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 15px;
+}
+</style>
+</head>
+<body>
+
+<h2 align="center">Add New Member</h2>
+
+<div class="container">
+  <form action="/action_page.php">
+    <label for="fname">First Name</label>
+    <input type="text" id="fname" name="firstname" placeholder="Your name..">
+
+    <label for="lname">Last Name</label>
+    <input type="text" id="lname" name="lastname" placeholder="Your last name..">
+<label for="Blood">Blood Type</label> 
+<select>
+  <option value="O-">O-</option> 
+  <option value="O+">O+</option>
+  <option value="A-">A-</option>
+  <option value="A+">A+</option>
+  <option value="B-">B-</option>
+  <option value="B+">B+</option>
+  <option value="AB-">AB-</option>
+  <option value="AB+">AB+</option>
+</select>
+<label for="age">Age</label>
+<select>
+  <option value="Bigger18">>18</option> 
+  <option value="Lower18"><18</option>
+</select>
+    <div>
+        <script type= "text/javascript" src = "countries.js"></script>
+        Select Country   <select id="country" name ="country"></select> 
+        Select State: <select name ="state" id ="state"></select>   <hr/>
+      </div>
+
+    <label for="subject">Health Status</label>
+    <textarea id="subject" name="status" placeholder="Address recipient's health condition.." style="height:100px"></textarea>
+    <a href="./viewwaitlist.html" class="button">Back</a>
+    <input type="submit" value="Submit">
+  </form>
+</div>
+
+<script language="javascript">
+        populateCountries("country", "state"); // first parameter is id of country drop-down and second parameter is id of state drop-down
+        populateCountries("country2");
+        populateCountries("country2");
+</script>
+</body>
+</html>

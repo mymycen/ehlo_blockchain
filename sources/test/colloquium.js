@@ -70,7 +70,7 @@ contract('ColloquiumUser', function(accounts) {
     });
   });
 
-  it("propose and approve a new member (100% approval, 2 members))", function() {
+  it("propose and approve a new member (100% approval, 3 members))", function() {
     var ColloquiumInstance;
     return Colloquium.deployed().then(function(instance) {
       ColloquiumInstance = instance;
@@ -206,7 +206,7 @@ contract('ColloquiumUser', function(accounts) {
   }
 
   function assert_hasMemberKeyPosition(instance, index, expected_address) {
-    return instance.__get_member_key(index)
+    return instance.get_member_key(index)
       .then(function(res) {
         assert.equal(res, expected_address, "Address was misplaced")
       });

@@ -20,7 +20,7 @@ library Colloquium {
     require (self.member_keys.length == 0);
     // what happens if mapping is not empty?
     
-  	add_member(self, creator);
+    add_member(self, creator);
   }
 
   function propose_new_member(Session storage self, address new_proposed_member, address sender) public {
@@ -89,7 +89,7 @@ library Colloquium {
        // tie or rejection
        clear_voting(self);
      }
-    }
+   }
 
    function clear_voting(Session storage self) internal {
      self.voting = Voting({
@@ -112,6 +112,7 @@ library Colloquium {
   	}
   }
 
+  // TODO: adapt to swap with last entry
   function remove_member(Session storage self, address addr) internal {
   	if(self.is_member[addr]) {
      delete self.is_member[addr];
@@ -119,41 +120,38 @@ library Colloquium {
      // delete entry in key and restore balance
      // since soldity just leaves the place empty where the member
      // is removed we need to manual balance the list
-     bool found = false;
      for(uint i = 0; i < self.member_keys.length; i++) {
-      if(found) {
-       // shift all entries one entry done
-       self.member_keys[i-1] = self.member_keys[i];
-     }
 
-     if(self.member_keys[i] == addr) {
-       // element found we want to replace
-       found = true;
+       if(self.member_keys[i] == addr) {
+         // element found we want to replace
+         // delete the last entry in the list (is duplicated to the pre-last element)
+         // decrement the length counter
+         self.member_keys[i] = self.member_keys[self.member_keys.length - 1];
+         delete self.member_keys[self.member_keys.length - 1];
+         self.member_keys.length--;
+         return;
+       }
      }
    }
-   // delete the last entry in the list (is duplicated to the pre-last element)
-   // decrement the length counter
-   delete self.member_keys[self.member_keys.length - 1];
-   self.member_keys.length--;
  }
-}
 
-function is_voting_in_process(Session storage self) public view returns(bool) {
- return self.voting.subject_addr != 0;
-}
+ function is_voting_in_process(Session storage self) public view returns(bool) {
+   return self.voting.subject_addr != 0;
+ }
 
-function get_member_count(Session storage self) public view returns(uint) {
- return self.member_keys.length;
-} 
+ function get_member_count(Session storage self) public view returns(uint) {
+   return self.member_keys.length;
+ } 
 
-function is_member_of_colloquium(Session storage self, address addr) public view returns(bool) {
- return self.is_member[addr];
-}
+ function is_member_of_colloquium(Session storage self, address addr) public view returns(bool) {
+   return self.is_member[addr];
+ }
+
 
   /**
    * Debug function to return the address belonging to the given index i.
    **/
-   function __get_member_key(Session storage self, uint i) public view returns(address) {
+   function get_member_key(Session storage self, uint i) public view returns(address) {
     require (i < get_member_count(self));
     return self.member_keys[i];
   }

@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import ColloquiumUser from '../build/contracts/ColloquiumUser.json'
 import getWeb3 from './utils/getWeb3'
+import { withAlert } from 'react-alert'
 
 class Colloquium extends Component {
   constructor(props) {
@@ -16,10 +17,14 @@ class Colloquium extends Component {
 
       web3: null,    
       ColloquiumInstance: null,
-      defaultAccount: null
+      defaultAccount: null,
+
+      memberInputField: null,
+      newMemberEnabled: false
     }
 
-    this.newMember = this.newMember.bind(this)
+    this.newMember = this.newMember.bind(this);
+    this.handleChange = this.handleChange.bind(this);
   }
 
   componentWillMount() {
@@ -37,12 +42,18 @@ class Colloquium extends Component {
     })
   }
 
-    newMember() {
-        this.state.ColloquiumInstance.get.call(
-          this.state.defaultAccount
-          ).then((result) => {
-          return this.setState({ storageValue: result.c[0]})
-      })
+  newMember() {
+    var inputText = this.state.memberInputField;
+
+    if(! this.state.web3.isAddress(inputText.trim())) {
+      this.props.alert.show("'" + inputText + "' is not a valid address.");
+      return;
+    }
+
+    this.state.ColloquiumInstance.propose_new_member(inputText, {from: this.state.defaultAccount})
+    .then((result) => {
+      this.getMembers();
+    })
   }
 
   updateMember(position) {
@@ -51,7 +62,7 @@ class Colloquium extends Component {
       var members_tmp = this.state.members;
       members_tmp[position] = result;
       this.setState({members: members_tmp})
-      })
+    })
   }
 
   getMembers() {
@@ -71,9 +82,9 @@ class Colloquium extends Component {
      * Normally these functions would be called in the context of a
      * state management library, but for convenience I've placed them here.
      */
-    const contract = require('truffle-contract')
-    const Colloquium = contract(ColloquiumUser)
-    Colloquium.setProvider(this.state.web3.currentProvider)
+     const contract = require('truffle-contract')
+     const Colloquium = contract(ColloquiumUser)
+     Colloquium.setProvider(this.state.web3.currentProvider)
 
     // Declaring this for later so we can chain functions on Colloquium.
 
@@ -96,30 +107,34 @@ class Colloquium extends Component {
 
   }
 
+  handleChange(e) {
+    this.setState({memberInputField: e.target.value});
+  }
+
 
   render() {
     return (
       <div className="App">
-        <main className="container">
-          <div className="pure-g">
-            <div className="pure-u-1-1">
-              <h1>Colloquium Smart contract!</h1>
-              <p>votingInProgress: {this.state.votingInProgress.toString()}</p>
-              <p>votingSubjectAddr: {this.state.votingSubjectAddr}</p>
-              <p>votingKind: {this.state.votingKind.toString()}</p>
-              <p>votingApprovals: {this.state.votingApprovals}</p>
-              <p>votingRejections: {this.state.votingRejections}</p>
-              <p>members: {this.state.members.toString()}</p>
-              <button onClick={this.newMember}>Propse a new member</button>
-              <input type="text" placeholder="ethereum address"></input>
-            </div>
-          </div>
-        </main>
+      <main className="container">
+      <div className="pure-g">
+      <div className="pure-u-1-1">
+      <h1>Colloquium Smart contract!</h1>
+      <p>votingInProgress: {this.state.votingInProgress.toString()}</p>
+      <p>votingSubjectAddr: {this.state.votingSubjectAddr}</p>
+      <p>votingKind: {this.state.votingKind.toString()}</p>
+      <p>votingApprovals: {this.state.votingApprovals}</p>
+      <p>votingRejections: {this.state.votingRejections}</p>
+      <p>members: {this.state.members.toString()}</p>
+      <button onClick={this.newMember}>Propse a new member</button>
+      <input type="text" placeholder="ethereum address"  onChange={ this.handleChange }></input>
       </div>
-    );
+      </div>
+      </main>
+      </div>
+      );
   }
 
 }
 
-export default Colloquium;
+export default withAlert(Colloquium);
 

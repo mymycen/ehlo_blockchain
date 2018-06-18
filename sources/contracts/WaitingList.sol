@@ -1,6 +1,7 @@
 pragma solidity ^0.4.17;
+import "./WaitingListInterface.sol";
 
-contract WaitingList {
+contract WaitingList is isWaitingList{
 
     struct Recipient {
         address adr;

@@ -25,6 +25,10 @@ class Colloquium extends Component {
 
     this.newMember = this.newMember.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.getMembers = this.getMembers.bind(this);
+    this.checkForVoting = this.checkForVoting.bind(this);
+    this.accept = this.accept.bind(this);
+    this.reject = this.reject.bind(this);
   }
 
   componentWillMount() {
@@ -40,6 +44,21 @@ class Colloquium extends Component {
     .catch(() => {
       console.log('Error finding web3.')
     })
+
+    setTimeout(this.checkForVoting, 3000);
+  }
+
+  checkForVoting() {
+        this.state.ColloquiumInstance.is_voting_in_process.call(this.defaultAccount)
+      .then((result) => {
+        // Update state with the result.
+        this.setState({ votingInProgress: result })
+        if ( result ) {
+          return this.state.ColloquiumInstance.get_voting_subject.call(this.defaultAccount);
+        }
+      }).then((result) => {
+        this.setState({ votingSubjectAddr: result })
+      });
   }
 
   newMember() {
@@ -50,6 +69,8 @@ class Colloquium extends Component {
       return;
     }
 
+    console.log(inputText);
+
     this.state.ColloquiumInstance.propose_new_member(inputText, {from: this.state.defaultAccount})
     .then((result) => {
       this.getMembers();
@@ -57,7 +78,7 @@ class Colloquium extends Component {
   }
 
   updateMember(position) {
-    this.state.ColloquiumInstance.get_member_key(position, {from: this.state.defaultAccount})
+    this.state.ColloquiumInstance.get_member_count.call(this.state.defaultAccount)
     .then((result) => {
       var members_tmp = this.state.members;
       members_tmp[position] = result;
@@ -72,6 +93,22 @@ class Colloquium extends Component {
         this.updateMember(i);
       }
     })
+  }
+
+  accept() {
+    this.state.ColloquiumInstance.approve.call({from: this.state.defaultAccount})
+    .then(() => { 
+      this.getMembers();
+      this.checkForVoting();
+    });
+  }
+
+  reject() {
+    this.state.ColloquiumInstance.reject.call({from: this.state.defaultAccount})
+    .then(() => { 
+      this.getMembers();
+      this.checkForVoting();
+    });
   }
 
 
@@ -113,17 +150,29 @@ class Colloquium extends Component {
 
 
   render() {
+
+    const votingInProgess = this.state.votingInProgress;
+
+
+    let votingWindow;
+    if(votingInProgess) {
+      votingWindow = <div className="container">
+          <p>votingSubjectAddr: {this.state.votingSubjectAddr}</p>
+          <p>votingKind: {this.state.votingKind.toString()}</p>
+          <p>votingApprovals: {this.state.votingApprovals}</p>
+          <p>votingRejections: {this.state.votingRejections}</p>
+          <button onClick={this.accept}>Accept</button>
+          <button onClick={this.reject}>Reject</button>
+        </div>
+    } 
+        
     return (
       <div className="App">
       <main className="container">
       <div className="pure-g">
       <div className="pure-u-1-1">
       <h1>Colloquium Smart contract!</h1>
-      <p>votingInProgress: {this.state.votingInProgress.toString()}</p>
-      <p>votingSubjectAddr: {this.state.votingSubjectAddr}</p>
-      <p>votingKind: {this.state.votingKind.toString()}</p>
-      <p>votingApprovals: {this.state.votingApprovals}</p>
-      <p>votingRejections: {this.state.votingRejections}</p>
+      {votingWindow}
       <p>members: {this.state.members.toString()}</p>
       <button onClick={this.newMember}>Propse a new member</button>
       <input type="text" placeholder="ethereum address"  onChange={ this.handleChange }></input>

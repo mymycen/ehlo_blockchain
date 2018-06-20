@@ -4,10 +4,13 @@ import getWeb3 from './utils/getWeb3'
 import { withAlert } from 'react-alert'
 import Dropdown from 'react-dropdown'
 import 'react-dropdown/style.css'
-import PieChart from 'react-simple-pie-chart';
-import {FaUserPlus, FaUserTimes} from 'react-icons/lib/fa'
+import {FaUserPlus, FaUserTimes, FaTimesCircle, FaCheckCircle} from 'react-icons/lib/fa'
 import Button from 'muicss/lib/react/button';
 import Container from 'muicss/lib/react/container';
+import Doughnut from 'react-chartjs/lib/doughnut';
+import Divider from 'muicss/lib/react/divider';
+import Row from 'muicss/lib/react/row';
+import Col from 'muicss/lib/react/col';
 
 class Colloquium extends Component {
   constructor(props) {
@@ -21,6 +24,7 @@ class Colloquium extends Component {
       votingRejections: 0,
       votingHasVoted: false,
       votingAllowedToVote: false,
+      votingProposerAddr: null,
       members: [],
 
       web3: null,    
@@ -57,7 +61,12 @@ class Colloquium extends Component {
 
   }
 
+  componentDidMount() {
+    setInterval(this.checkForVoting, 5000);
+  }
+
   checkForVoting() {
+    console.log("called check for voting...")
     const self = this;
     const account = this.state.defaultAccount;
 
@@ -84,6 +93,10 @@ class Colloquium extends Component {
         // voting kind
         self.state.ColloquiumInstance.get_voting_kind.call(account)
         .then((result) => self.setState({votingKind: result}));
+
+        // proposer
+        self.state.ColloquiumInstance.get_voting_proposer.call(account)
+        .then((result) => self.setState({votingProposerAddr: result}));
 
         return self.state.ColloquiumInstance.get_voting_subject.call(account);
       }
@@ -125,7 +138,8 @@ class Colloquium extends Component {
     console.log("Getting member at position: " + position);
     this.state.ColloquiumInstance.get_member_key.call(position, this.state.defaultAccount)
     .then((result) => {
-      var members_tmp = this.state.members;
+      console.log("this:" + this);
+      let members_tmp = this.state.members;
       members_tmp[position] = result;
       this.setState({members: members_tmp})
     })
@@ -134,7 +148,8 @@ class Colloquium extends Component {
   getMembers() {
     this.state.ColloquiumInstance.get_member_count.call(this.state.defaultAccount)
     .then((result) => {
-      for (var i = 0; i < result.c[0]; i++) {
+      for (let i = 0; i < result.c[0]; i++) {
+        console.log("this:" + this);
         this.updateMember(i);
       }
     })
@@ -147,7 +162,7 @@ class Colloquium extends Component {
       self.getMembers();
       self.checkForVoting();
     }).catch(() => {
-      this.props.alert.show("Could not accept voting.");
+      self.props.alert.show("Could not accept voting.");
     });
   }
 
@@ -158,7 +173,7 @@ class Colloquium extends Component {
       self.getMembers();
       self.checkForVoting();
     }).catch(() => {
-      this.props.alert.show("Could not reject voting.");
+      self.props.alert.show("Could not reject voting.");
     });
   }
 
@@ -190,11 +205,8 @@ class Colloquium extends Component {
 
         // Stores a given value, 5 by default.
         this.getMembers();
-      }).then((result) => {
-        // Update state with the result.
-        setTimeout(this.checkForVoting, 3000);
-      })
-    })
+      });
+    });
 
   }
 
@@ -215,61 +227,118 @@ class Colloquium extends Component {
     let votingWindow;
     if(votingInProgess) {
       let votingKind;
+      let votingKindIcon;
       if(this.state.votingKind) {
-        votingKind = 
-        <div className="mui-container-fluid">
-        <div className="mui-col-md-2"><FaUserPlus size={60}/></div>
-        <div className="mui-col-md-10"><h2> member addition </h2>{this.state.votingSubjectAddr}</div>             
-        </div>;
+        votingKind = "addition";
+        votingKindIcon = <FaUserPlus size={60}/>
       } else {
-        votingKind = 
-        <div className="mui-container-fluid">
-        <div className="mui-col-md-2"><FaUserTimes size={60}/></div>
-        <div className="mui-col-md-10"><h2> member removal </h2>{this.state.votingSubjectAddr}</div>             
-        </div>;
+        votingKind = "removal";
+        votingKindIcon = <FaUserTimes size={60}/>
       }
 
       let slices = [
       {
         color: "#9E9E9E",
-        value: this.state.members.length - this.state.votingApprovals - this.state.votingRejections
+        value: this.state.members.length - this.state.votingApprovals - this.state.votingRejections,
+        label: "undecided"
       },
       {
         color: "#8BC34A",
-        value: this.state.votingApprovals
+        value: this.state.votingApprovals,
+        label: "approvals"
       },
       {
         color: "#f44336",
-        value: this.state.votingRejections
+        value: this.state.votingRejections,
+        label: "rejections"
       }
       ];
 
+      let hasVoted;
+      if(this.state.votingHasVoted) {
+        hasVoted = <FaCheckCircle color="#8BC34A"/>
+      } else {
+        hasVoted = <FaTimesCircle color="#f44336"/>
+      }
+
+      let allowedToVote;
+      if(this.state.votingAllowedToVote) {
+        allowedToVote = <FaCheckCircle color="#8BC34A"/>
+      } else {
+        allowedToVote = <FaTimesCircle color="#f44336"/>
+      }
+
       votingWindow = <Container>
       <div className="mui-panel">
-      {votingKind}
-      <PieChart slices={slices} style={{maxWidth: "250px"}}/>
-      <p>hasVoted: {this.state.votingHasVoted.toString()}</p>
-      <p>allowedToVote: {this.state.votingAllowedToVote.toString()}</p>
+        <Row>
+          <Col md="1"><h2>{votingKindIcon}</h2></Col>
+          <Col md="11"><h1 style={{marginBottom: 0}}>Member {votingKind} </h1>
+          <div style={{marginBottom: 10}}><strong>{this.state.votingSubjectAddr}</strong></div>
+          <Divider style={{marginBottom: 30}}/>
+          <Row>
+          <Col md="5"><Doughnut data={slices} width="350" height="350"/></Col>
+          <Col md="7">
+            <h4>{this.state.votingApprovals} approvals <strong>to</strong> {this.state.votingRejections} rejections <br/>
+            {this.state.members.length - this.state.votingApprovals - this.state.votingRejections} votes pending</h4>   
+            <div style={{marginBottom: 30}}/>      
+            <p>{allowedToVote} you are allowed to vote</p>
+            <p>{hasVoted} you have voted</p>
+            <div style={{marginBottom: 30}}/>      
+            <p>{this.state.votingProposerAddr} proposed the {votingKind} of {this.state.votingSubjectAddr}. <br/>
+            The Voting will be open until at least 51% of the members have decided for one option. In case of a tie, the proposal is rejected.</p>
+          </Col>
+          </Row>
       <div className="mui--text-right">
       <Button color="primary" onClick={this.accept}>Accept</Button>
       <Button onClick={this.reject}>Reject</Button>
       </div>
+      </Col>
+      </Row>
       </div>
       </Container>
     } 
+
+    let members = [];
+
+    for (let i=0; i<this.state.members.length; i++) {
+      if(this.state.members[i] == this.state.defaultAccount) {
+        members.push(<li><a href="#">{this.state.members[i]} (you)</a></li>);
+      } else {
+        members.push(<li><a href="#">{this.state.members[i]}</a></li>);
+      }
+    }
+
 
     return (
       <div>
       <Container>
       {votingWindow}
-      <p>members: {this.state.members.toString()}</p>
-      <Button onClick={this.removeMember}>Propose a member removal</Button><Dropdown options={this.state.members} onChange={this.handleMemberRemovalDropdownChange} value={this.state.members[0]} placeholder="Select a member to remove" />
+
+      <Container>
+      <div className="mui-panel">
+      <Row>
+      <Col md="4">
+      <h2>Colloquium members:</h2>
+      <ul>
+      {members}
+      </ul>
+      </Col>
+      <Col md="8">
       <form className="mui-form--inline">
+      <Button onClick={this.removeMember}>Propose a member removal</Button>
+      <div className="mui-textfield">
+      <Dropdown options={this.state.members} onChange={this.handleMemberRemovalDropdownChange} value={this.state.members[0]} placeholder="Select a member to remove" />
+      </div>
+
+      <Button onClick={this.newMember}>Propse a new member</Button>
       <div className="mui-textfield">
         <input type="text" placeholder="ethereum address"  onChange={ this.handleNewMemberInputChange }></input>
       </div>
-      <Button onClick={this.newMember}>Propse a new member</Button>
       </form>
+      </Col>
+      </Row>
+      </div>
+      </Container>
       </Container>
       </div>
       );

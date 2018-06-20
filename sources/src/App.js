@@ -14,7 +14,6 @@ class App extends Component {
     return (
       <div className="App">
       <Appbar></Appbar>
-      <h1>Colloquium Smart contract!</h1>
       <Colloquium></Colloquium>
       </div>
       );

@@ -1,10 +1,9 @@
 import React, { Component } from 'react'
 import Colloquium from './Colloquium'
 
-import './css/oswald.css'
-import './css/open-sans.css'
-import './css/pure-min.css'
 import './App.css'
+import Appbar from 'muicss/lib/react/appbar';
+
 
 class App extends Component {
   constructor(props) {
@@ -14,19 +13,11 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <nav className="navbar pure-menu pure-menu-horizontal">
-            <a href="#" onClick={this.updateValue} className="pure-menu-heading pure-menu-link">Truffle Box</a>
-        </nav>
-
-        <main className="container">
-          <div className="pure-g">
-            <div className="pure-u-1-1">
-              <Colloquium></Colloquium>
-            </div>
-          </div>
-        </main>
+      <Appbar></Appbar>
+      <h1>Colloquium Smart contract!</h1>
+      <Colloquium></Colloquium>
       </div>
-    );
+      );
   }
 }
 

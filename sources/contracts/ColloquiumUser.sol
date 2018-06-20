@@ -59,6 +59,10 @@ contract ColloquiumUser {
 		return session.voting.rejections;
 	}
 
+	function has_voted() public view returns(bool) {
+		return session.voting.has_voted[msg.sender];
+	}
+
 	function get_member_key(uint i) public view returns(address) {
 		return session.get_member_key(i);	
 	}

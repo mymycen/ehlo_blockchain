@@ -1,16 +1,19 @@
 import React, { Component } from 'react'
 import ColloquiumUser from '../build/contracts/ColloquiumUser.json'
+import CoordinationCenter from '../build/contracts/CoordinationCenter.json'
+import CoordinationCenterMaster from '../build/contracts/CoordinationCenterMaster.json'
 import getWeb3 from './utils/getWeb3'
 import { withAlert } from 'react-alert'
 import Dropdown from 'react-dropdown'
 import 'react-dropdown/style.css'
 import {FaUserPlus, FaUserTimes, FaTimesCircle, FaCheckCircle} from 'react-icons/lib/fa'
 import Button from 'muicss/lib/react/button';
-import Container from 'muicss/lib/react/container';
 import Doughnut from 'react-chartjs/lib/doughnut';
 import Divider from 'muicss/lib/react/divider';
 import Row from 'muicss/lib/react/row';
 import Col from 'muicss/lib/react/col';
+import Input from 'muicss/lib/react/input';
+
 
 class Colloquium extends Component {
   constructor(props) {
@@ -55,7 +58,7 @@ class Colloquium extends Component {
       // Instantiate contract once web3 provided.
       this.instantiateContract();
     }).catch(() => {
-      this.props.alert.show("Could not find metamask plugin. (No web3 found).");
+      this.props.alert.show("Could not find metamask plugin. (No web3 found).", { type: 'error'});
       console.log('Error finding web3.')
     })
 
@@ -112,7 +115,7 @@ class Colloquium extends Component {
     const inputText = this.state.memberInputField;
 
     if(! this.state.web3.isAddress(inputText.trim())) {
-      this.props.alert.show("'" + inputText + "' is not a valid address.");
+      this.props.alert.show("'" + inputText + "' is not a valid address.", { type: 'error'});
       return;
     }
 
@@ -162,7 +165,7 @@ class Colloquium extends Component {
       self.getMembers();
       self.checkForVoting();
     }).catch(() => {
-      self.props.alert.show("Could not accept voting.");
+      self.props.alert.show("Could not accept voting.", { type: 'error'});
     });
   }
 
@@ -173,7 +176,7 @@ class Colloquium extends Component {
       self.getMembers();
       self.checkForVoting();
     }).catch(() => {
-      self.props.alert.show("Could not reject voting.");
+      self.props.alert.show("Could not reject voting.", { type: 'error'});
     });
   }
 
@@ -185,15 +188,25 @@ class Colloquium extends Component {
      * Normally these functions would be called in the context of a
      * state management library, but for convenience I've placed them here.
      */
+     let Contract;
      const contract = require('truffle-contract')
-     const Colloquium = contract(ColloquiumUser)
-     Colloquium.setProvider(this.state.web3.currentProvider)
+
+     if(this.props.type == "cc") {
+      Contract = contract(CoordinationCenter);
+     } else if(this.props.type == "tc") {
+      // not implemented yet
+     } else {
+      this.props.alert.show("Could not Instantiate contract: " + this.props.type + " not understand.", {type: 'error'});
+      return;
+     }
+
+     Contract.setProvider(this.state.web3.currentProvider)
 
     // Declaring this for later so we can chain functions on Colloquium.
 
     // Get accounts.
     this.state.web3.eth.getAccounts((error, accounts) => {
-      Colloquium.deployed().then((instance) => {
+      Contract.at(this.props.contractAddr).then((instance) => {
         if(instance == null) {
           this.props.alert.show("No Colloquium contract found on blockchain.");
         }
@@ -268,7 +281,7 @@ class Colloquium extends Component {
         allowedToVote = <FaTimesCircle color="#f44336"/>
       }
 
-      votingWindow = <Container>
+      votingWindow = 
       <div className="mui-panel">
         <Row>
           <Col md="1"><h2>{votingKindIcon}</h2></Col>
@@ -295,7 +308,6 @@ class Colloquium extends Component {
       </Col>
       </Row>
       </div>
-      </Container>
     } 
 
     let members = [];
@@ -311,35 +323,30 @@ class Colloquium extends Component {
 
     return (
       <div>
-      <Container>
       {votingWindow}
-
-      <Container>
       <div className="mui-panel">
       <Row>
-      <Col md="4">
+      <Col md="12">
       <h2>Colloquium members:</h2>
       <ul>
       {members}
       </ul>
       </Col>
-      <Col md="8">
-      <form className="mui-form--inline">
-      <Button onClick={this.removeMember}>Propose a member removal</Button>
-      <div className="mui-textfield">
-      <Dropdown options={this.state.members} onChange={this.handleMemberRemovalDropdownChange} value={this.state.members[0]} placeholder="Select a member to remove" />
-      </div>
-
-      <Button onClick={this.newMember}>Propse a new member</Button>
-      <div className="mui-textfield">
-        <input type="text" placeholder="ethereum address"  onChange={ this.handleNewMemberInputChange }></input>
-      </div>
+      <Col md="12">
+      <form>
+      <Row>
+      <Col md="8"><Dropdown options={this.state.members} onChange={this.handleMemberRemovalDropdownChange} value={this.state.members[0]} placeholder="Select a member to remove" /></Col>
+      <Col md="4"><Button onClick={this.removeMember}>Propose a member removal</Button></Col>
+      </Row>
+      
+      <Row>
+      <Col md="8"><Input  label="Ethereum Address" floatingLabel={true}  onChange={ this.handleNewMemberInputChange }></Input></Col>
+      <Col md="4"><Button onClick={this.newMember}>Propse a new member</Button></Col>
+      </Row>
       </form>
       </Col>
       </Row>
       </div>
-      </Container>
-      </Container>
       </div>
       );
   }

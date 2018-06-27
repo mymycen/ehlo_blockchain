@@ -1,6 +1,8 @@
 pragma solidity ^0.4.17;
 
 import "../contracts/CoordinationCenter.sol";
+import "../contracts/CoordinationCenterMaster.sol";
+
 
 contract WaitingList {
 
@@ -44,11 +46,14 @@ contract WaitingList {
         address cc_addr = new CoordinationCenter();
         CoordinationCenter cc = CoordinationCenter(cc_addr);
 
-        cc_master_addr = new CoordinationCenter();
-        CoordinationCenter cc_master = CoordinationCenter(cc_master_addr);
+        cc_master_addr = new CoordinationCenterMaster();
+        CoordinationCenterMaster cc_master = CoordinationCenterMaster(cc_master_addr);
 
-        cc.set_as_slave(msg.sender, cc_master_addr);
-        cc_master.set_as_master(cc, this); 
+        cc.bind(cc_master_addr);
+        cc_master.bind(this);
+
+        cc.register(msg.sender);
+        cc_master.register(cc_addr);
     }
 
     function get_cc_master() public view returns (address) {

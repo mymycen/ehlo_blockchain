@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Colloquium from './Colloquium'
+import ComponentSelector from './ComponentSelector'
 
 import './App.css'
 import Appbar from 'muicss/lib/react/appbar';
@@ -14,7 +15,7 @@ class App extends Component {
     return (
       <div className="App">
       <Appbar></Appbar>
-      <Colloquium></Colloquium>
+      <ComponentSelector></ComponentSelector>
       </div>
       );
   }

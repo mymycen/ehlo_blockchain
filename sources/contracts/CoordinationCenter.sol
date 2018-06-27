@@ -1,80 +1,93 @@
 pragma solidity ^0.4.22;
 
-import "../contracts/Colloquium.sol";
-import "../contracts/WaitingList.sol";
+import "../contracts/CoordinationCenterMaster.sol";
 
-contract CoordinationCenter {
+contract CoordinationCenter is CoordinationCenterMaster {
 
-	using Colloquium for Colloquium.Session;
-	Colloquium.Session session;
-
-	WaitingList waitingList;
 	CoordinationCenter ccMaster;
 
-	address maintainer; // creator of this contract, usually the waiting lsit SC 
-
-	/** Constructor functions **/
-	constructor() public {
-		maintainer = msg.sender;
-	}
-
-	function init(address initialMember) internal {
+	// Override
+	function bind(address master) public {
 		require(maintainer == msg.sender);
-		session.init_session(initialMember);
+		ccMaster = CoordinationCenter(master);
 	}
 
-	function set_as_slave(address initialMember, address ccMasterAddr) public {
-		init(initialMember);
-		ccMaster = CoordinationCenter(ccMasterAddr);
+	function master_propose_new_member(address new_proposed_member) public {
+		checkAuthentication();
+		ccMaster.propose_new_member(new_proposed_member);
 	}
 
-	function set_as_master(address initialMember, address wlAddr) public {
-		init(initialMember);
-		waitingList = WaitingList(wlAddr);
+	function master_propose_member_removal(address member) public {
+		checkAuthentication();
+		ccMaster.propose_member_removal(member);
 	}
 
-	/** Own Colloquium methods **/ 
-
-	function propose_new_member(address new_proposed_member) public {
-		session.propose_new_member(new_proposed_member, msg.sender);
+	function master_approve() public {
+		checkAuthentication();
+		ccMaster.approve();
 	}
 
-	function propose_member_removal(address member) public {
-		session.propose_member_removal(member, msg.sender);	
+	function master_reject() public {  	
+		checkAuthentication();
+		ccMaster.reject();
 	}
 
-	function approve() public {
-		session.approve(msg.sender);	
-	}
-
-	function reject() public {  	
-		session.reject(msg.sender);	
-	}
-
-	function is_voting_in_process() public view returns(bool) {
-		return session.is_voting_in_process();
+	function master_is_voting_in_process() public view returns(bool) {
+		checkAuthentication();
+		return ccMaster.is_voting_in_process();
 	}	
 
-	function get_member_count() public view returns(uint) {
-		return session.get_member_count();
+	function master_get_member_count() public view returns(uint) {
+		checkAuthentication();
+		return ccMaster.get_member_count();
 	} 	
 
-	function is_member_of_colloquium(address addr) public view returns(bool) {
-		return session.is_member_of_colloquium(addr);	
+	function master_is_member_of_colloquium(address addr) public view returns(bool) {
+		checkAuthentication();
+		return ccMaster.is_member_of_colloquium(addr);
 	}	
 
-	function __get_member_key(uint i) public view returns(address) {
-		return session.__get_member_key(i);	
+	function master_get_member_key(uint i) public view returns(address) {
+		checkAuthentication();
+		return ccMaster.get_member_key(i);
 	}
 
-	/** Remote Colloquium methods **/ 
+	function master_get_voting_subject() public view returns(address) {
+		checkAuthentication();
+		return ccMaster.get_voting_subject();
+	}
+
+	function master_get_voting_proposer() public view returns(address) {
+		checkAuthentication();
+		return ccMaster.get_voting_proposer();
+	}
+
+	function master_get_voting_kind() public view returns(bool) {
+		checkAuthentication();
+		return ccMaster.get_voting_kind();
+	}
+
+	function master_get_voting_approvals() public view returns(uint) {
+		checkAuthentication();
+		return ccMaster.get_voting_approvals();
+	}
+
+	function master_get_voting_rejections() public view returns(uint) {
+		checkAuthentication();
+		return ccMaster.get_voting_rejections();
+	}
+
+	function master_has_voted() public view returns(bool) {
+		checkAuthentication();
+		return ccMaster.has_voted();
+	}
 
 
 	/** WaitingList functions **/
 
+	// Override
 	function addOrgan(address addr, string bt, uint age, uint region, uint country) public returns (address[20]) {
-		require (is_member_of_colloquium(msg.sender) == true);
-		
-		return waitingList.addOrgan(addr, bt, age, region, country);
+		checkAuthentication();
+		return ccMaster.addOrgan(addr, bt, age, region, country);
 	}
 }

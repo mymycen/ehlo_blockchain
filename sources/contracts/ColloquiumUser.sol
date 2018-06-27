@@ -39,7 +39,31 @@ contract ColloquiumUser {
 		return session.is_member_of_colloquium(addr);	
 	}	
 
-	function __get_member_key(uint i) public view returns(address) {
-		return session.__get_member_key(i);	
+	function get_voting_subject() public view returns(address) {
+		return session.voting.subject_addr;
+	}
+
+	function get_voting_proposer() public view returns(address) {
+		return session.voting.proposer_addr;
+	}
+
+	function get_voting_kind() public view returns(bool) {
+		return session.voting.add;
+	}
+
+	function get_voting_approvals() public view returns(uint) {
+		return session.voting.approvals;
+	}
+
+	function get_voting_rejections() public view returns(uint) {
+		return session.voting.rejections;
+	}
+
+	function has_voted() public view returns(bool) {
+		return session.voting.has_voted[msg.sender];
+	}
+
+	function get_member_key(uint i) public view returns(address) {
+		return session.get_member_key(i);	
 	}
 }

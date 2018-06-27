@@ -1,5 +1,7 @@
 pragma solidity ^0.4.17;
 
+import "../contracts/CoordinationCenter.sol";
+
 contract WaitingList {
 
     struct Recipient {
@@ -32,6 +34,26 @@ contract WaitingList {
 
     Recipient[] internal recipientsList;
     Organ[] internal organList;
+
+    address cc_master_addr;
+
+    /**
+     * This methods creates a CC and CC master contract as well as the TC and TC master contact. 
+     */
+    constructor() public {
+        address cc_addr = new CoordinationCenter();
+        CoordinationCenter cc = CoordinationCenter(cc_addr);
+
+        cc_master_addr = new CoordinationCenter();
+        CoordinationCenter cc_master = CoordinationCenter(cc_master_addr);
+
+        cc.set_as_slave(msg.sender, cc_master_addr);
+        cc_master.set_as_master(cc, this); 
+    }
+
+    function get_cc_master() public view returns (address) {
+        return cc_master_addr;
+    }
 
     function addRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
         var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.17;
 import "./WaitingListInterface.sol";
 
-contract WaitingList is isWaitingList{
+contract WaitingList is isWaitingList {
 
     struct Recipient {
         address adr;
@@ -35,16 +35,54 @@ contract WaitingList is isWaitingList{
     Organ[] internal organList;
 
     function addRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
-        Recipient memory newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
+        var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
         recipientsMap[adr] = newRecipient;
         recipientsList.push(newRecipient);
         return adr;
     }
 
+    function getRecipientBloodtype(address adr) public returns (string) {
+        return recipientsMap[adr].bloodtype;
+    }
+
+    function getRecipientHLA(address adr) public returns (uint) {
+        return recipientsMap[adr].hla;
+    }
+
+    function getRecipientAccMM(address adr) public returns (bool) {
+        return recipientsMap[adr].accMM;
+    }
+
+    function getRecipientSignupdate(address adr) public returns (uint) {
+        return recipientsMap[adr].signupDate;
+    }
+
+    function getRecipientPriority(address adr) public returns (bool) {
+        return recipientsMap[adr].highPriority;
+    }
+
+    function getRecipientAge (address adr) public returns (uint) {
+        return recipientsMap[adr].age;
+    }
+
+    function getRecipientRegion(address adr) public returns (uint) {
+        return recipientsMap[adr].region;
+    }
+
+    function getRecipientCountry(address adr) public returns (uint) {
+        return recipientsMap[adr].country;
+    }
+
+/*
+    function getRecipients() public returns (Recipient[]) {
+        return recipientsList;
+    }
+*/
     function removeRecipient (address a) public returns (address) {
         for(uint i = 0; i < recipientsList.length; i++) {
             if(recipientsList[i].adr == a) { break;}
         }
+
         recipientsList[i] = recipientsList[recipientsList.length - 1];
         delete recipientsList[recipientsList.length - 1];
         recipientsList.length--;
@@ -53,22 +91,96 @@ contract WaitingList is isWaitingList{
         return a;
     }
 
-    function makeList (address organAddr) internal returns (address) {
+    function addOrgan(address addr, string bt, uint age, uint region, uint country) public returns (address[20]) {
+        organMap[addr] = Organ(addr, bt, age, region, country);
+        organList.push(organMap[addr]);
+        
+        return makeList(addr);
+    }
+
+    function makeList (address organAddr) internal returns (address[20]) {
 
         Organ memory organ = organMap[organAddr];
         
         listItem[] memory list = new listItem[](recipientsList.length);
         listItem[10] memory _ftAM;
         listItem[10] memory _ftMM;
+        listItem[20] memory finalList;
+        address[20] memory finalListAddr;
+        
+        uint i = 0;
+        uint k = 0;
+        listItem memory tmp;
 
-        for(uint i = 0; i < recipientsList.length; i++) {
+        for(i = 0; i < recipientsList.length; i++) {
             uint score = calculate(organ, recipientsList[i], _ftAM, _ftMM);   
             if(score > 0) {
                 list[i] = listItem(recipientsList[i].adr, score);
             }        
         }
+        
+        /* Puts the 20 listItems with the highest scores in finalList. Afterwards
+           finalList is an ordered list of the 20 highest scores with the highest
+           score being at index 0 the lowest at index 19. */
+        
+        for(k = 0; k < list.length; k++) {
+            if(list[k].score <= finalList[19].score)  {
+                continue;
+            } else {
+                /* Score of list item is larger than lowest score in the final list. this
+                   means the list item needs to be added to the final list.*/
+                for(i = 0; i < 20; i++){
+                    if(finalList[i].score <= list[k].score) {
+                        finalList = insert(finalList, list[k],i);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        /* sort _ftMM */
+        for(k = 1; i < 10; i++) {
+            for(i = k; k > 0; k--) {
+                if(_ftMM[k].score > _ftMM[k-1].score){
+                    tmp = _ftMM[k-1];
+                    _ftMM[k-1] = _ftMM[k];
+                    _ftMM[k] = tmp;
+                } else {
+                    break;
+                }
+            }
+        }
+        
+        /* sort _ftAM */
+        for(k = 1; i < 10; i++) {
+            for(i = k; k > 0; k--) {
+                if(_ftAM[k].score > _ftAM[k-1].score){
+                    tmp = _ftAM[k-1];
+                    _ftAM[k-1] = _ftAM[k];
+                    _ftAM[k] = tmp;
+                } else {
+                    break;
+                }
+            }
+        }
+        
+        /* Merge finalList with the list of the missmatch high scores. */
+        i = 0;
+        for(k = 0; k < 10; k++) {
+            if(_ftMM[k].score > 0) {
+                finalList = insert(finalList, _ftMM[k], i++);
+            }
+        }
+        
+        /* Merge finalList with the list of the acceptable missmatch high scores. */
+        i = 0;
+        for(k = 0; k < 10; k++) {
+            if(_ftAM[k].score > 0) {
+                finalList = insert(finalList, _ftAM[k], i++);
+            }
+        }
 
-        /* Return one recipient */
+        /* Return one recipient 
         score = 0;
         uint index = 0;
         for( i = 0; i < list.length; i++) {
@@ -79,6 +191,33 @@ contract WaitingList is isWaitingList{
         }
 
         return list[index].addr;
+        
+        */
+        
+        for(i=0; i < 20;i++){
+            finalListAddr[i] = finalList[i].addr;
+        }
+        
+        return finalListAddr;
+    }
+    
+    /*********************************************************************
+     * 
+     * Inserts a list item at a given position in a merged list. The items
+     * in the merged list, whose index is higher than position are shifted.
+     * The last item of the merged list is lost.
+     * 
+     **********************************************************************/
+    
+    function insert (listItem[20] mlist, listItem item, uint pos) internal returns (listItem[20]) {
+        if(pos < 0 || pos >= 20) {
+            return mlist;
+        }
+        for(uint i = 19; i > pos; i--) {
+            mlist[i] = mlist[i-1];
+        }
+        mlist[pos] = item;
+        return mlist;
     }
 
     /****************************************************************
@@ -233,6 +372,4 @@ contract WaitingList is isWaitingList{
     
 
 }
-
-
 

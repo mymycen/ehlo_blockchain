@@ -2,8 +2,8 @@ pragma solidity ^0.4.17;
 
 import "../contracts/CoordinationCenter.sol";
 import "../contracts/CoordinationCenterMaster.sol";
-import '../contracts/TransplantCenter.json';
-import '../contracts/TransplantCenterMaster.json';
+import '../contracts/TransplantCenter.sol';
+import '../contracts/TransplantCenterMaster.sol';
 
 
 contract WaitingList {
@@ -36,8 +36,8 @@ contract WaitingList {
     mapping (address => Recipient) recipientsMap;
     mapping (address => Organ) organMap;
 
-    Recipient[] internal recipientsList;
-    Organ[] internal organList;
+    Recipient[] recipientsList;
+    Organ[] organList;
 
     address cc_master_addr;
     address tc_master_addr;
@@ -46,6 +46,7 @@ contract WaitingList {
      * This methods creates a CC and CC master contract as well as the TC and TC master contact. 
      */
     constructor() public {
+        // CoordinationCenter
         address cc_addr = new CoordinationCenter();
         CoordinationCenter cc = CoordinationCenter(cc_addr);
 
@@ -57,7 +58,8 @@ contract WaitingList {
 
         cc.register(msg.sender);
         cc_master.register(cc_addr);
-        
+
+        // TransplantCenter
         address tc_addr = new TransplantCenter();
         TransplantCenter tc = TransplantCenter(tc_addr);
         
@@ -103,23 +105,23 @@ contract WaitingList {
         return a;
     }
 
-    function addOrgan(address addr, string bt, uint age, uint region, uint country) public returns (address[20]) {
-        organMap[addr] = Organ(addr, bt, age, region, country);
-        organList.push(organMap[addr]);
+    function addOrgan(address addr, string bt, uint age, uint region, uint country) public view returns (address[20]) {
+        Organ memory organ = Organ(addr, bt, age, region, country);
+        //organList.push(organMap[addr]);
         
-        return makeList(addr);
+        return makeList(organ);
     }
 
-    function makeList (address organAddr) internal returns (address[20]) {
+    function makeList (Organ organ) internal returns (address[20]) {
 
-        Organ memory organ = organMap[organAddr];
+        //Organ memory organ = organMap[organAddr];
         
         listItem[] memory list = new listItem[](recipientsList.length);
         listItem[10] memory _ftAM;
         listItem[10] memory _ftMM;
         listItem[20] memory finalList;
         address[20] memory finalListAddr;
-        
+
         uint i = 0;
         uint k = 0;
         listItem memory tmp;
@@ -381,8 +383,14 @@ contract WaitingList {
         }
         return true;
     }
-    
 
+    function get_recipients_count() public view returns(uint) {
+        return recipientsList.length;
+    }
+
+    function get_recipient(uint i) public view returns(address) {
+        return recipientsList[i].adr;
+    }
 }
 
 

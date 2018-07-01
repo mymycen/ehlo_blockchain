@@ -49,6 +49,8 @@ class Organ extends Component {
 
   instantiateContract() {
 
+    console.log("cc addr: ", this.props.cc);
+
      const contract = require('truffle-contract')
      const cc = contract(CoordinationCenter)
      cc.setProvider(this.state.web3.currentProvider)
@@ -56,7 +58,7 @@ class Organ extends Component {
     this.state.web3.eth.getAccounts((error, accounts) => {
       cc.at(this.props.cc).then((instance) => {
         if(instance == null) {
-          this.props.alert.show("No waiting list contract found on blockchain.", { type: 'error'});
+          this.props.alert.show("No cc contract found on blockchain.", { type: 'error'});
         }
         this.setState({
           ccInstance: instance, 
@@ -77,19 +79,17 @@ class Organ extends Component {
     console.log("age:", this.inputAge.controlEl.value);
     console.log("state:", this.selectState.controlEl.value);
     console.log("country:", this.selectCountry.controlEl.value);
-
-    this.setState({
-
-    });
     
-    this.state.ccInstance.addOrgan(
+    this.state.ccInstance.addOrgan.call(
       this.inputPatientAddress.controlEl.value,
       bt,
       this.inputAge.controlEl.value,
       this.selectState.controlEl.value,
       this.selectCountry.controlEl.value,
       {from: this.state.defaultAccount}
-    ).call().then((list) => {
+    ).then((list) => {
+      console.log("list", list)
+
       this.setState({
         matching: list,
         visible: true,
@@ -154,7 +154,7 @@ class Organ extends Component {
           <Option value="1" label="France" disabled="true"/>
           <Option value="2" label="Germany" />
           <Option value="3" label="Spain" disabled="true"/>
-          <Option value="4" label="Itlay" disabled="true"/>
+          <Option value="4" label="Italy" disabled="true"/>
         </Select>
         <Select ref={el => { this.selectState = el; }} name="input" label="Region" defaultValue="option2">
           <Option value="1" label="Berlin" />
@@ -162,7 +162,7 @@ class Organ extends Component {
           <Option value="3" label="Hamburg" />
           <Option value="4" label="Bayern" />
         </Select>
-        <div className="mui--text-right"><Button variant="raised">Submit</Button></div>
+        <div className="mui--text-right"><Button color="primary" variant="raised">Submit</Button></div>
       </Form>
       {resultView}
       </div>

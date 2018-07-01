@@ -1,133 +1,233 @@
-import React from 'react';
-import { Field, reduxForm } from 'redux-form';
+import React, { Component } from 'react';
+import { withAlert } from 'react-alert';
+import Input from 'muicss/lib/react/input';
+import Radio from 'muicss/lib/react/radio';
+import Option from 'muicss/lib/react/option';
+import Button from 'muicss/lib/react/button';
+import Select from 'muicss/lib/react/select';
+import Row from 'muicss/lib/react/row';
+import Col from 'muicss/lib/react/col';
+import Checkbox from 'muicss/lib/react/checkbox';
+import getWeb3 from './utils/getWeb3';
+import TransplantCenter from '../build/contracts/TransplantCenter.json';
 
-const AddRecipient = props => {
-  const { handleSubmit, pristine, reset, submitting } = props;
-  return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Ethereum address</label>
+
+
+import './App.css'
+
+
+
+
+class AddRecipient extends Component {
+
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      tcInstance: null,
+      web3: null,
+
+      matching: null,
+      visible: false,
+      patientAddress: null,
+      patientHal: null,
+      patientHP: false,
+      patientAge: 0,
+      patientBT: null,
+      patientState: 0,
+      patientCountry: 0
+    }
+  }
+
+  componentWillMount() {
+    getWeb3.then(results => {
+      this.setState({web3: results.web3});
+    }).catch(() => {
+      this.props.alert.show("Could not find metamask plugin. (No web3 found).", { type: 'error'});
+      console.log('Error finding web3.')
+    }).then(() => {
+      this.instantiateContract();
+    })
+  }
+
+  instantiateContract() {
+    console.log("res: ", this.props.tc);
+
+     const contract = require('truffle-contract')
+     const tc = contract(TransplantCenter)
+     tc.setProvider(this.state.web3.currentProvider)
+
+    this.state.web3.eth.getAccounts((error, accounts) => {
+      tc.at(this.props.tc).then((instance) => {
+        if(instance == null) {
+          this.props.alert.show("No tc contract found on blockchain.", { type: 'error'});
+        }
+        this.setState({
+          tcInstance: instance, 
+          defaultAccount: accounts[0]
+        });
+      });
+    });
+
+  }
+
+
+  onSubmit(ev) {
+    ev.preventDefault();  // prevent form submission
+    const bt = this.getBT();
+    const hal = this.getHal();
+
+    console.log("Patient data: ")
+    console.log("address:",this.inputPatientAddress.controlEl.value);
+    console.log("bt:", bt);
+    console.log("hal:", hal);
+    console.log("age:", this.inputAge.controlEl.value);
+    console.log("state:", this.selectState.controlEl.value);
+    console.log("high priority:", this.checkHP.controlEl.checked);
+    console.log("country:", this.selectCountry.controlEl.value);
+    
+    this.state.tcInstance.addRecipient(
+      this.inputPatientAddress.controlEl.value,
+      bt,
+      hal,
+      false, // TODO: add to from
+      1530448617, // TODO: implement react call (in s)
+      this.checkHP.controlEl.checked,
+      this.inputAge.controlEl.value,
+      this.selectState.controlEl.value,
+      this.selectCountry.controlEl.value,
+      {from: this.state.defaultAccount}
+    ).then((result) => {
+
+      console.log("res: ", result);
+      this.setState({
+        matching: result,
+        visible: true,
+        patientAddress: this.inputPatientAddress.controlEl.value,
+        patientAge: this.inputAge.controlEl.value,
+        patientBT: bt,
+        patientHal: hal,
+        patientHP: this.checkHP.controlEl.checked,
+        patientState: this.selectState.controlEl.value,
+        patientCountry: this.selectCountry.controlEl.value
+      });
+    }).catch(() => {
+      this.props.alert.show("Could not add patient.", { type: 'error'});
+    });
+  }
+
+  getBT() {
+    if(this.radioBloodTypeA.controlEl.checked) {
+      return "A";
+    }
+    if(this.radioBloodTypeB.controlEl.checked) {
+      return "B";
+    }
+    if(this.radioBloodTypeAB.controlEl.checked) {
+      return "AB";
+    }
+    if(this.radioBloodTypeO.controlEl.checked) {
+      return "O";
+    }
+    return null;
+  }
+
+  getHal() {
+    if(this.halDPA1.controlEl.checked) {
+      return 1;
+    }
+    if(this.halDRA.controlEl.checked) {
+      return 2;
+    }
+    if(this.halDRB1.controlEl.checked) {
+      return 3;
+    }
+    if(this.halDQB1.controlEl.checked) {
+      return 4;
+    }
+    if(this.halDPB1.controlEl.checked) {
+      return 5;
+    }
+    if(this.halDQA1.controlEl.checked) {
+      return 6;
+    }
+    return 0;
+  }
+
+  render() {
+    let resultView;
+
+    if(this.state.visible) {
+      resultView = 
         <div>
-          <Field
-            name="ETH Address"
-            component="input"
-            type="text"
-            placeholder="ETH Address"
-          />
+          <div className="mui--text-headline">Added patient</div>
+          {this.state.matching}
+        </div>
+    }
+
+    return (
+    <div className="mui-panel">
+    <form onSubmit={this.onSubmit.bind(this)}>
+      <div>
+        <div>
+          <Input ref={el => { this.inputPatientAddress = el; }} label="Patient address" floatingLabel={true}/>
         </div>
       </div>
       <div>
-        <label>BloodType</label>
-        <div>
-        <label>
-          <Field name="blood" component="input" type="radio" value="A" />
-          {' '}
-          A
-          </label>
-        <label>
-          <Field name="blood" component="input" type="radio" value="B" />
-          {' '}
-          B
-          </label>
-        <label>
-          <Field name="blood" component="input" type="radio" value="AB" />
-          {' '}
-          AB
-          </label>
-        <label>
-          <Field name="blood" component="input" type="radio" value="O" />
-          {' '}
-          O
-          </label>
-          </div>
+        <Row>
+        <Col md="1"><Radio ref={el => { this.radioBloodTypeA = el; }} name="bt" label="A" defaultChecked={true} /></Col>
+        <Col md="1"><Radio ref={el => { this.radioBloodTypeB = el; }} name="bt" label="B" /></Col>
+        <Col md="1"><Radio ref={el => { this.radioBloodTypeAB = el; }} name="bt" label="AB" /></Col>
+        <Col md="1"><Radio ref={el => { this.radioBloodType0 = el; }} name="bt" label="0" /></Col>
+        </Row>
       </div>
       <div>
-        <label>Age</label>
         <div>
-          <label>
-            <Field name="age" component="input" type="radio" value="over18" />
-            {' '}
-            >18
-          </label>
-          <label>
-            <Field name="age" component="input" type="radio" value="below18" />
-            {' '}
-            0-18
-          </label>
+        <Input ref={el => { this.inputAge = el; }} label="Age" type="number" floatingLabel={true}/>
         </div>
       </div>
       <div>
-        <label>HLA</label>
         <div>
-          <label>
-            <Field name="hla" component="input" type="radio" value="HLA-DPA1" />
-            {' '}
-            HLA-DPA1
-          </label>
-          <label>
-            <Field name="hla" component="input" type="radio" value="HLA-DPB1" />
-            {' '}
-            HLA-DPB1
-          </label>
-          <label>
-            <Field name="hla" component="input" type="radio" value="HLA-DQA1" />
-            {' '}
-            HLA-DQA1
-          </label>
-          <label>
-            <Field name="blood" component="input" type="radio" value="HLA-DQB1" />
-            {' '}
-            HLA-DQB1
-          </label>
-          <label>
-            <Field name="blood" component="input" type="radio" value="HLA-DRB1" />
-            {' '}
-            HLA-DRB1
-          </label>
-          <label>
-            <Field name="blood" component="input" type="radio" value="HLA-DRA" />
-            {' '}
-            HLA-DRA
-          </label>
+          <Row>
+            <Col md="2"><Radio ref={el => { this.halDPA1 = el; }} name="hla" label="HLA-DPA1" defaultChecked={true} /></Col>
+            <Col md="2"><Radio ref={el => { this.halDRA = el; }} name="hla" label="HLA-DRA" /></Col>
+            <Col md="2"><Radio ref={el => { this.halDRB1 = el; }} name="hla" label="HLA-DRB1" /></Col>
+            <Col md="2"><Radio ref={el => { this.halDQB1 = el; }} name="hla" label="HLA-DQB1" /></Col>
+            <Col md="2"><Radio ref={el => { this.halDPB1 = el; }} name="hla" label="HLA-DPB1" /></Col>
+            <Col md="2"><Radio ref={el => { this.halDQA1 = el; }} name="hla" label="HLA-DQA1" /></Col>
+            </Row>
         </div>
       </div>
       <div>
-        <label>Country</label>
-        <div>
-          <Field name="country" component="select" src="countries.js">
-            <option />
-            <option value="country"></option>
-          </Field>
-        </div>
+        <Select ref={el => { this.selectCountry = el; }} name="input" label="Country" defaultValue="option2">
+          <Option value="1" label="France" disabled="true"/>
+          <Option value="2" label="Germany" />
+          <Option value="3" label="Spain" disabled="true"/>
+          <Option value="4" label="Italy" disabled="true"/>
+        </Select>
       </div>
         <div>
-          <label>Region</label>
-          <div>
-            <Field
-              name="region"
-              component="input"
-              type="text"
-              placeholder="Region code"
-            />
-          </div>
+          <Select ref={el => { this.selectState = el; }} name="input" label="Region" defaultValue="option2">
+            <Option value="1" label="Berlin" />
+            <Option value="2" label="Brandenburg" />
+            <Option value="3" label="Hamburg" />
+            <Option value="4" label="Bayern" />
+          </Select>
         </div>
 
       <div>
-        <label>Status</label>
         <div>
-          <Field name="notes" component="textarea" />
-        </div>
+        <Checkbox ref={el => { this.checkHP = el; }} name="inputA1" label="High Priority" defaultChecked={false} />        </div>
       </div>
       <div>
-        <button type="submit" disabled={pristine || submitting}>Submit</button>
-        <button type="button" disabled={pristine || submitting} onClick={reset}>
-          Clear Values
-        </button>
+        <div className="mui--text-right"><Button color="primary" variant="raised">Submit</Button></div>
       </div>
     </form>
-  );
-};
 
-export default reduxForm({
-  form: 'simple', // a unique identifier for this form
-})(AddRecipient);
+    {resultView}
+    </div>
+    );
+  }
+}
+
+export default withAlert(AddRecipient)

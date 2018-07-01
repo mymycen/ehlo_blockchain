@@ -1,5 +1,6 @@
 var Colloquium = artifacts.require("./Colloquium.sol");
 var ColloquiumUser = artifacts.require("./ColloquiumUser.sol");
+
 var WaitingList = artifacts.require("./WaitingList.sol");
 
 module.exports = function(deployer) {

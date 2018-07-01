@@ -196,20 +196,12 @@ class Colloquium extends Component {
      if(this.props.type == "cc") {
       Contract = contract(CoordinationCenter);
      } else if(this.props.type == "tc") {
-      // not implemented yet
+      Contract = contract(TransplantCenter);
      } else {
       this.props.alert.show("Could not Instantiate contract: " + this.props.type + " not understand.", {type: 'error'});
       return;
      }
 
-     if(this.props.type == "tc") {
-      Contract = contract(TransplantCenter);
-     } else if(this.props.type == "tc") {
-      // not implemented yet
-     } else {
-      this.props.alert.show("Could not Instantiate contract: " + this.props.type + " not understand.", {type: 'error'});
-      return;
-     }
      Contract.setProvider(this.state.web3.currentProvider)
 
     // Declaring this for later so we can chain functions on Colloquium.

@@ -66,44 +66,67 @@ class ComponentSelector extends Component {
           defaultAccount: accounts[0]
         });
 
+        instance.get_recipients_count.call(accounts[0]).then((xxx) => {
+          console.log("waiting list count: ", xxx.c)
+          return instance.get_recipient(xxx.c - 1)
+        }).then((addr => {
+          console.log("last patient on list: ", addr);
+        }))
+
+        // CC master contract
         return instance.get_cc_master.call(accounts[0]);
       }).then((result) => {
         this.setState({
-        	cc_master_address: result
-        });
-        
-        return instance.get_tc_master.call(accounts[0]);
-      }).then((result) => {
-        this.setState({
-        	tc_master_address: result
+          cc_master_address: result
         });
 
-        return ccm.at(result);
-        return tcm.at(result);
-      }).then((instance) => {
-      	this.getMembers(instance);
-      })
+        return ccm.at(result);      
+      }).then((result) => {
+        this.getMembers(result, true);
+      }).then(() => {
+        // TC master contract
+
+        return this.state.waitingListInstance.get_tc_master.call(accounts[0]);
+      }).then((result) => {
+        this.setState({
+          tc_master_address: result
+        });
+
+        return tcm.at(result);      
+      }).then((result) => {
+        this.getMembers(result, false);
+      });
     });
 
   }
 
-  updateMember(position, colloquium) {
+  updateMember(position, colloquium, isCC) {
     console.log("Getting member at position: " + position);
     colloquium.get_member_key.call(position, this.state.defaultAccount)
     .then((result) => {
       console.log("this:" + this);
-      let members = this.state.cc_addresses;
+
+      let members;
+      if(isCC) {
+        members = this.state.cc_addresses;
+      } else {
+        members = this.state.tc_addresses;
+      }
       members[position] = result;
-      this.setState({cc_addresses: members})
+      if(isCC) {
+        this.setState({cc_addresses: members});
+      } else {
+        this.setState({tc_addresses: members});
+      }
     })
   }
 
-  getMembers(colloquium) {
+  getMembers(colloquium, isCC) {
     colloquium.get_member_count.call(this.state.defaultAccount)
     .then((result) => {
       for (let i = 0; i < result.c[0]; i++) {
         console.log("this:" + this);
-        this.updateMember(i, colloquium);
+        this.updateMember(i, colloquium, isCC);
       }
     })
   }

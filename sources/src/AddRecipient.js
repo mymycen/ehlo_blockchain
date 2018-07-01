@@ -10,12 +10,9 @@ import Col from 'muicss/lib/react/col';
 import Checkbox from 'muicss/lib/react/checkbox';
 import getWeb3 from './utils/getWeb3';
 import TransplantCenter from '../build/contracts/TransplantCenter.json';
-
-
+import {FaExclamationTriangle} from 'react-icons/lib/fa'
 
 import './App.css'
-
-
 
 
 class AddRecipient extends Component {
@@ -28,11 +25,13 @@ class AddRecipient extends Component {
       web3: null,
 
       matching: null,
+
       visible: false,
       patientAddress: null,
       patientHal: null,
       patientHP: false,
       patientAge: 0,
+      patientAccMM: false,
       patientBT: null,
       patientState: 0,
       patientCountry: 0
@@ -81,6 +80,7 @@ class AddRecipient extends Component {
     console.log("address:",this.inputPatientAddress.controlEl.value);
     console.log("bt:", bt);
     console.log("hal:", hal);
+    console.log("Acceptable Missmatch: ", this.checkAccMM.controlEl.checked);
     console.log("age:", this.inputAge.controlEl.value);
     console.log("state:", this.selectState.controlEl.value);
     console.log("high priority:", this.checkHP.controlEl.checked);
@@ -90,8 +90,8 @@ class AddRecipient extends Component {
       this.inputPatientAddress.controlEl.value,
       bt,
       hal,
-      false, // TODO: add to from
-      1530448617, // TODO: implement react call (in s)
+      this.checkAccMM.controlEl.checked,
+      this.getSecondsSinceEpoch(),
       this.checkHP.controlEl.checked,
       this.inputAge.controlEl.value,
       this.selectState.controlEl.value,
@@ -105,6 +105,7 @@ class AddRecipient extends Component {
         visible: true,
         patientAddress: this.inputPatientAddress.controlEl.value,
         patientAge: this.inputAge.controlEl.value,
+        patientAccMM: this.checkAccMM.controlEl.checked,
         patientBT: bt,
         patientHal: hal,
         patientHP: this.checkHP.controlEl.checked,
@@ -114,6 +115,11 @@ class AddRecipient extends Component {
     }).catch(() => {
       this.props.alert.show("Could not add patient.", { type: 'error'});
     });
+  }
+
+  getSecondsSinceEpoch() {
+    const d = new Date();
+    return Math.round(d.getTime() / 1000);
   }
 
   getBT() {
@@ -158,10 +164,19 @@ class AddRecipient extends Component {
     let resultView;
 
     if(this.state.visible) {
+      let ciriticalView;
+
+      if(this.state.patientHP) {
+        ciriticalView = <div><FaExclamationTriangle color="#f44336" /> Ciritical Condition</div>
+      } 
+
       resultView = 
         <div>
           <div className="mui--text-headline">Added patient</div>
-          {this.state.matching}
+          <strong>{ this.state.patientAddress }</strong>
+          , { this.state.patientAge }
+          , Bloodtype: { this.state.patientBT }<br/>
+          { ciriticalView }
         </div>
     }
 
@@ -174,6 +189,7 @@ class AddRecipient extends Component {
         </div>
       </div>
       <div>
+        <legend>Bloodtype:</legend>
         <Row>
         <Col md="1"><Radio ref={el => { this.radioBloodTypeA = el; }} name="bt" label="A" defaultChecked={true} /></Col>
         <Col md="1"><Radio ref={el => { this.radioBloodTypeB = el; }} name="bt" label="B" /></Col>
@@ -188,6 +204,7 @@ class AddRecipient extends Component {
       </div>
       <div>
         <div>
+        <legend>Major histocompatibility complex:</legend>
           <Row>
             <Col md="2"><Radio ref={el => { this.halDPA1 = el; }} name="hla" label="HLA-DPA1" defaultChecked={true} /></Col>
             <Col md="2"><Radio ref={el => { this.halDRA = el; }} name="hla" label="HLA-DRA" /></Col>
@@ -214,11 +231,8 @@ class AddRecipient extends Component {
             <Option value="4" label="Bayern" />
           </Select>
         </div>
-
-      <div>
-        <div>
-        <Checkbox ref={el => { this.checkHP = el; }} name="inputA1" label="High Priority" defaultChecked={false} />        </div>
-      </div>
+        <Checkbox ref={el => { this.checkAccMM = el; }} name="inputA2" label="Acceptable Missmatch" defaultChecked={false} />
+        <Checkbox ref={el => { this.checkHP = el; }} name="inputA1" label="High Priority" defaultChecked={false} />
       <div>
         <div className="mui--text-right"><Button color="primary" variant="raised">Submit</Button></div>
       </div>

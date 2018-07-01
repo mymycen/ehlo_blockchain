@@ -66,9 +66,13 @@ class ComponentSelector extends Component {
           defaultAccount: accounts[0]
         });
 
-        instance.get_recipients_count.call(accounts[0]).then((xxx) => {
-          console.log("waiting list count: ", xxx.c)
-          return instance.get_recipient(xxx.c - 1)
+        instance.get_recipients_count.call(accounts[0]).then((patientCount) => {
+          console.log("waiting list count: ", patientCount.c);
+          if(patientCount.c > 0) {
+            return instance.get_recipient(patientCount.c - 1);
+          } else {
+            return "no patients on the waiting list.";
+          }
         }).then((addr => {
           console.log("last patient on list: ", addr);
         }))

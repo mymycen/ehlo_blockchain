@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import ColloquiumUser from '../build/contracts/ColloquiumUser.json'
 import CoordinationCenter from '../build/contracts/CoordinationCenter.json'
 import CoordinationCenterMaster from '../build/contracts/CoordinationCenterMaster.json'
+import TransplantCenter from '../build/contracts/TransplantCenter.json';
+import TransplantCenterMaster from '../build/contracts/TransplantCenterMaster.json';
 import getWeb3 from './utils/getWeb3'
 import { withAlert } from 'react-alert'
 import Dropdown from 'react-dropdown'
@@ -200,6 +202,14 @@ class Colloquium extends Component {
       return;
      }
 
+     if(this.props.type == "tc") {
+      Contract = contract(TransplantCenter);
+     } else if(this.props.type == "tc") {
+      // not implemented yet
+     } else {
+      this.props.alert.show("Could not Instantiate contract: " + this.props.type + " not understand.", {type: 'error'});
+      return;
+     }
      Contract.setProvider(this.state.web3.currentProvider)
 
     // Declaring this for later so we can chain functions on Colloquium.

@@ -2,6 +2,8 @@ pragma solidity ^0.4.17;
 
 import "../contracts/CoordinationCenter.sol";
 import "../contracts/CoordinationCenterMaster.sol";
+import '../contracts/TransplantCenter.json';
+import '../contracts/TransplantCenterMaster.json';
 
 
 contract WaitingList {
@@ -38,6 +40,7 @@ contract WaitingList {
     Organ[] internal organList;
 
     address cc_master_addr;
+    address tc_master_addr;
 
     /**
      * This methods creates a CC and CC master contract as well as the TC and TC master contact. 
@@ -54,10 +57,27 @@ contract WaitingList {
 
         cc.register(msg.sender);
         cc_master.register(cc_addr);
+        
+        address tc_addr = new TransplantCenter();
+        TransplantCenter tc = TransplantCenter(tc_addr);
+        
+        tc_master_addr = new TransplantCenterMaster();
+        TransplantCenterMaster tc_master = TransplantCenterMaster(tc_master_addr);
+
+        tc.bind(tc_master_addr);
+        tc_master.bind(this);
+
+        tc.register(msg.sender);
+        tc_master.register(tc_addr);
+
     }
 
     function get_cc_master() public view returns (address) {
         return cc_master_addr;
+    }
+
+    function get_tc_master() public view returns (address) {
+        return tc_master_addr;
     }
 
     function addRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {

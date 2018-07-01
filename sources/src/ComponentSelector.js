@@ -7,8 +7,9 @@ import getWeb3 from './utils/getWeb3';
 import WaitingList from '../build/contracts/WaitingList.json';
 import CoordinationCenter from '../build/contracts/CoordinationCenter.json';
 import CoordinationCenterMaster from '../build/contracts/CoordinationCenterMaster.json';
+import TransplantCenter from '../build/contracts/TransplantCenter.json';
+import TransplantCenterMaster from '../build/contracts/TransplantCenterMaster.json';
 import { withAlert } from 'react-alert';
-
 
 import './App.css'
 
@@ -23,7 +24,10 @@ class ComponentSelector extends Component {
       defaultAccount: null,
 
       cc_master_address: null,
-      cc_addresses: []
+      cc_addresses: [],
+
+      tc_master_address: null,
+      tc_addresses:[]
   	}
   }
 
@@ -49,6 +53,9 @@ class ComponentSelector extends Component {
      const ccm = contract(CoordinationCenterMaster)
      ccm.setProvider(this.state.web3.currentProvider)
 
+     const tcm = contract(TransplantCenterMaster)
+     tcm.setProvider(this.state.web3.currentProvider)
+
     this.state.web3.eth.getAccounts((error, accounts) => {
       waitingList.deployed().then((instance) => {
         if(instance == null) {
@@ -64,8 +71,15 @@ class ComponentSelector extends Component {
         this.setState({
         	cc_master_address: result
         });
+        
+        return instance.get_tc_master.call(accounts[0]);
+      }).then((result) => {
+        this.setState({
+        	tc_master_address: result
+        });
 
         return ccm.at(result);
+        return tcm.at(result);
       }).then((instance) => {
       	this.getMembers(instance);
       })
@@ -102,7 +116,7 @@ class ComponentSelector extends Component {
       	  	<ContractInit label="Coordination Center" type="cc" master={this.state.cc_master_address} slaves={this.state.cc_addresses}></ContractInit>
       	  </Tab>
       	  <Tab value="pane-2" label="Transplantation Center">
-      	  	<ContractInit label="Transplantation Center" type="tc" master={this.state.cc_master_address} slaves={this.state.cc_addresses}></ContractInit>
+      	  	<ContractInit label="Transplantation Center" type="tc" master={this.state.tc_master_address} slaves={this.state.tc_addresses}></ContractInit>
       	  </Tab>
       	  <Tab value="pane-3" label="Waiting List">
       	    Not implemented yet.

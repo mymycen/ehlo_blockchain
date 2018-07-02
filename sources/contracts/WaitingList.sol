@@ -38,6 +38,7 @@ contract WaitingList {
 
     Recipient[] recipientsList;
     Organ[] organList;
+	
 
     address cc_master_addr;
     address tc_master_addr;
@@ -88,6 +89,17 @@ contract WaitingList {
         recipientsList.push(newRecipient);
         return adr;
     }
+	
+	  function updateRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
+        var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
+        recipientsMap[adr] = newRecipient;
+		for(uint n = 0; n < recipientsList.length; n++) {
+			if(recipientsList[n].adr == newRecipient.adr) {
+				recipientsList[n] = newRecipient;
+			}
+		} 
+        return adr;
+    }
 /*
     function getRecipients() public returns (Recipient[]) {
         return recipientsList;
@@ -105,7 +117,7 @@ contract WaitingList {
         return a;
     }
 
-    function addOrgan(address addr, string bt, uint age, uint region, uint country) public view returns (address[20]) {
+    function addOrgan(address addr, string bt, uint age, uint region, uint country) public returns (address[20]) {
         Organ memory organ = Organ(addr, bt, age, region, country);
         //organList.push(organMap[addr]);
         
@@ -120,7 +132,7 @@ contract WaitingList {
         listItem[10] memory _ftAM;
         listItem[10] memory _ftMM;
         listItem[20] memory finalList;
-        address[20] memory finalListAddr;
+		address[20] memory finalListAddr;
 
         uint i = 0;
         uint k = 0;
@@ -132,7 +144,7 @@ contract WaitingList {
                 list[i] = listItem(recipientsList[i].adr, score);
             }        
         }
-        
+				
         /* Puts the 20 listItems with the highest scores in finalList. Afterwards
            finalList is an ordered list of the 20 highest scores with the highest
            score being at index 0 the lowest at index 19. */
@@ -151,9 +163,11 @@ contract WaitingList {
                 }
             }
         }
+		
+		
         
         /* sort _ftMM */
-        for(k = 1; i < 10; i++) {
+        for(k = 1; k < 10; k++) {
             for(i = k; k > 0; k--) {
                 if(_ftMM[k].score > _ftMM[k-1].score){
                     tmp = _ftMM[k-1];
@@ -166,7 +180,7 @@ contract WaitingList {
         }
         
         /* sort _ftAM */
-        for(k = 1; i < 10; i++) {
+        for(k = 1; k < 10; k++) {
             for(i = k; k > 0; k--) {
                 if(_ftAM[k].score > _ftAM[k-1].score){
                     tmp = _ftAM[k-1];
@@ -211,8 +225,9 @@ contract WaitingList {
         for(i=0; i < 20;i++){
             finalListAddr[i] = finalList[i].addr;
         }
+		
+		return finalListAddr;
         
-        return finalListAddr;
     }
     
     /*********************************************************************

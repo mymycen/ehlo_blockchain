@@ -138,9 +138,18 @@ contract WaitingList {
     }
 */
     function removeRecipient (address a) public returns (address) {
+        uint check = 0;
         for(uint i = 0; i < recipientsList.length; i++) {
-            if(recipientsList[i].adr == a) { break;}
+            if(recipientsList[i].adr == a) { 
+                check = 1;
+                break;
+            }
         }
+
+        if(check == 0) {
+            return 0x0;
+        }
+
         recipientsList[i] = recipientsList[recipientsList.length - 1];
         delete recipientsList[recipientsList.length - 1];
         recipientsList.length--;

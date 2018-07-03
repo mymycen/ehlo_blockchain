@@ -31,6 +31,7 @@ class AddRecipient extends Component {
       patientHal: null,
       patientHP: false,
       patientAge: 0,
+      patientSignUpDate: Math.floor(Date.now()/1000),
       patientAccMM: false,
       patientBT: null,
       patientState: 0,

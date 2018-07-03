@@ -91,6 +91,11 @@ contract TransplantCenterMaster {
 		return waitingList.addRecipient(adr, bt, hla, accMM , signup, hp, age, region, country);
 	}
 
+    function updateRecipient(address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
+		checkAuthentication();
+		return waitingList.updateRecipient(adr, bt, hla, accMM, signup, hp, age, region, country);
+	}
+
 	function removeRecipient(address a) public returns (address) {
 		checkAuthentication();
 		return waitingList.removeRecipient(a);

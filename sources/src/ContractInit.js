@@ -72,7 +72,8 @@ class ContractInit extends Component {
     if(this.state.renderContract) {
       if(this.props.type == "cc") {
         mainForm = <Organ cc={this.state.contractAddr}></Organ>
-      } else if (this.props.type == "tc") {
+      } 
+      else if (this.props.type == "tc") {
         mainForm = <AddRecipient tc={this.state.contractAddr}></AddRecipient>
       }
     }

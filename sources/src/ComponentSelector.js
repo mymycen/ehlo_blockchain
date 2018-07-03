@@ -4,6 +4,7 @@ import Tab from 'muicss/lib/react/tab';
 import Container from 'muicss/lib/react/container'
 import ContractInit from './ContractInit';
 import getWeb3 from './utils/getWeb3';
+//import Waitinglist from './Waitinglist';
 import WaitingList from '../build/contracts/WaitingList.json';
 import CoordinationCenter from '../build/contracts/CoordinationCenter.json';
 import CoordinationCenterMaster from '../build/contracts/CoordinationCenterMaster.json';
@@ -88,8 +89,8 @@ class ComponentSelector extends Component {
       }).then((result) => {
         this.getMembers(result, true);
       }).then(() => {
+        
         // TC master contract
-
         return this.state.waitingListInstance.get_tc_master.call(accounts[0]);
       }).then((result) => {
         this.setState({
@@ -146,7 +147,7 @@ class ComponentSelector extends Component {
       	  	<ContractInit label="Transplantation Center" type="tc" master={this.state.tc_master_address} slaves={this.state.tc_addresses}></ContractInit>
       	  </Tab>
       	  <Tab value="pane-3" label="Waiting List">
-      	    Not implemented yet.
+      	  Not Implement Yet
       	  </Tab>
       	</Tabs>
       </Container>

@@ -83,6 +83,38 @@ contract WaitingList {
         return tc_master_addr;
     }
 
+    function getRecipientBloodtype(address adr) public returns (string) {
+        return recipientsMap[adr].bloodtype;
+    }
+
+    function getRecipientHLA(address adr) public returns (uint) {
+        return recipientsMap[adr].hla;
+    }
+
+    function getRecipientAccMM(address adr) public returns (bool) {
+        return recipientsMap[adr].accMM;
+    }
+
+    function getRecipientSignupdate(address adr) public returns (uint) {
+        return recipientsMap[adr].signupDate;
+    }
+
+    function getRecipientPriority(address adr) public returns (bool) {
+        return recipientsMap[adr].highPriority;
+    }
+
+    function getRecipientAge (address adr) public returns (uint) {
+        return recipientsMap[adr].age;
+    }
+
+    function getRecipientRegion(address adr) public returns (uint) {
+        return recipientsMap[adr].region;
+    }
+
+    function getRecipientCountry(address adr) public returns (uint) {
+        return recipientsMap[adr].country;
+    }
+
     function addRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
         var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
         recipientsMap[adr] = newRecipient;

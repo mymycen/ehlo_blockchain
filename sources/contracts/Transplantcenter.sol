@@ -60,12 +60,15 @@ contract Transplantcenter{
 
   // }
 
+
     //Call Waitinglist add recipient function
     function addRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
         WaitingList r = WaitingList (adr);
         r.addRecipient(adr,bt,hla,accMM,signup,hp,age,region,country);
         return r.getRecipientsList();
     }
+    
+
    // function addRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
    //     Recipient memory newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
    //     recipientsMap[adr] = newRecipient;

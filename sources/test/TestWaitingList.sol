@@ -39,13 +39,13 @@ contract TestWaitingList {
         Assert.equal(returnedAddress, expected, "Address doesnt match");
     }
 
-/*------------------POSSIBLE?-----------------
+//------------------POSSIBLE?-----------------
     function testRemoveFalseRecipient() public {
-        address expected = 1234;
+        address expected = 0x0;
         address returnedAddress = waitinglist.removeRecipient(1234);
         Assert.equal(returnedAddress, expected, "Address doesnt match");
     }
-*/
+
 
 /*-----------------HOW TO CHECK ADDRESSES IN LISTS?--------------
     function testAddOrgan() public {

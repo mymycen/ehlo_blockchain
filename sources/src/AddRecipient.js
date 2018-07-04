@@ -31,7 +31,7 @@ class AddRecipient extends Component {
       patientHal: null,
       patientHP: false,
       patientAge: 0,
-      patientSignUpDate: Math.floor(Date.now()/1000),
+      patientSignUpDate: 0,
       patientAccMM: false,
       patientBT: null,
       patientState: 0,
@@ -76,6 +76,7 @@ class AddRecipient extends Component {
     ev.preventDefault();  // prevent form submission
     const bt = this.getBT();
     const hal = this.getHal();
+    const signUpDate = this.getSecondsSinceEpoch();
 
     console.log("Patient data: ")
     console.log("address:",this.inputPatientAddress.controlEl.value);
@@ -86,13 +87,14 @@ class AddRecipient extends Component {
     console.log("state:", this.selectState.controlEl.value);
     console.log("high priority:", this.checkHP.controlEl.checked);
     console.log("country:", this.selectCountry.controlEl.value);
+    console.log("signUpDate:", signUpDate);
     
     this.state.tcInstance.addRecipient(
       this.inputPatientAddress.controlEl.value,
       bt,
       hal,
       this.checkAccMM.controlEl.checked,
-      this.getSecondsSinceEpoch(),
+      signUpDate,
       this.checkHP.controlEl.checked,
       this.inputAge.controlEl.value,
       this.selectState.controlEl.value,
@@ -109,6 +111,7 @@ class AddRecipient extends Component {
         patientAccMM: this.checkAccMM.controlEl.checked,
         patientBT: bt,
         patientHal: hal,
+        patientSignUpDate: signUpDate,
         patientHP: this.checkHP.controlEl.checked,
         patientState: this.selectState.controlEl.value,
         patientCountry: this.selectCountry.controlEl.value

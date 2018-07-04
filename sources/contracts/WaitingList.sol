@@ -162,7 +162,7 @@ contract WaitingList {
 
     function addOrgan(address addr, string bt, uint age, uint region, uint country) public returns (address[20]) {
         Organ memory organ = Organ(addr, bt, age, region, country);
-        //organList.push(organMap[addr]);
+        // organList.push(organMap[addr]);
         
         return makeList(organ);
     }

@@ -82,36 +82,36 @@ contract WaitingList {
     function get_tc_master() public view returns (address) {
         return tc_master_addr;
     }
-
-    function getRecipientBloodtype(address adr) public returns (string) {
+    //Add view?
+    function getRecipientBloodtype(address adr) public view returns (string) {
         return recipientsMap[adr].bloodtype;
     }
 
-    function getRecipientHLA(address adr) public returns (uint) {
+    function getRecipientHLA(address adr) public view returns (uint) {
         return recipientsMap[adr].hla;
     }
 
-    function getRecipientAccMM(address adr) public returns (bool) {
+    function getRecipientAccMM(address adr) public view returns (bool) {
         return recipientsMap[adr].accMM;
     }
 
-    function getRecipientSignupdate(address adr) public returns (uint) {
+    function getRecipientSignupdate(address adr) public view returns (uint) {
         return recipientsMap[adr].signupDate;
     }
 
-    function getRecipientPriority(address adr) public returns (bool) {
+    function getRecipientPriority(address adr) public view returns (bool) {
         return recipientsMap[adr].highPriority;
     }
 
-    function getRecipientAge (address adr) public returns (uint) {
+    function getRecipientAge (address adr) public view returns (uint) {
         return recipientsMap[adr].age;
     }
 
-    function getRecipientRegion(address adr) public returns (uint) {
+    function getRecipientRegion(address adr) public view returns (uint) {
         return recipientsMap[adr].region;
     }
 
-    function getRecipientCountry(address adr) public returns (uint) {
+    function getRecipientCountry(address adr) public view returns (uint) {
         return recipientsMap[adr].country;
     }
 

@@ -15,7 +15,7 @@ contract WaitingList {
         bool accMM;
         uint signupDate; /*block.timestamp - seconds since unix epoch */
         bool highPriority;
-        uint age;
+        uint age;  /* in number of seconds since unix epoch */
         uint region;
         uint country;
     }
@@ -389,11 +389,11 @@ contract WaitingList {
         }
 
         /* Add points for children and growing adults. */
-        if(res.age <= 16) {
+        if((block.timestamp - res.age) <= 16*60*60*24*365) {
             score += HLAMiss * 2;
         }
         /* Growing adults get a bonus of 100 points. */
-        if(res.age <= 21) {
+        if((block.timestamp - res.age) <= 21*60*60*24*365) {
             score += 100;
         }
 

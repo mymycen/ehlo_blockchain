@@ -15,7 +15,6 @@ class Waitinglist extends Component {
     this.state = {
       web3: null,
       matching: [],
-
       visible: false,
 
     }
@@ -54,23 +53,25 @@ class Waitinglist extends Component {
   }
  //Is the get_recipient right function to show up all recipient info??
   getRecipient() {
+    result
+    
+    let bt= this.state.wlInstance.getRecipientBloodtype;
+    let age= this.state.wlInstance.getRecipientHLA;
+    let am= this.state.wlInstance.getRecipientAccMM;
+    let hp= this.state.wlInstance.getRecipientPriority;
+    let hla= this.state.wlInstance.getRecipientHLA;
+    
     this.state.wlInstance.get_recipient.call(this.state.defaultAccount)
     .then((result) => {
-       let bt= this.state.wlInstance.getRecipientBloodtype;
-       let age= this.state.wlInstance.getRecipientHLA;
-       let am= this.state.wlInstance.getRecipientAccMM;
-       let hp= this.state.wlInstance.getRecipientPriority;
-       let hla= this.state.wlInstance.getRecipientHLA;
-      for (let i = 0; i < result.c[0]; i++) {
+       for (let i = 0; i < result.c[0]; i++) {
         console.log("this:" + this);
         this.getRecipient(i);
       }
     })
   }
 
-  let WaitingList;
-
-  render() {
+  render() { 
+      let WaitingList;
     return (
       <Container fluid={true}>
         <Row>

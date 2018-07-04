@@ -118,14 +118,16 @@ contract WaitingList {
 
 
     function addRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
-        var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
+        require(msg.sender == tc_master_addr);
+	    var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
         recipientsMap[adr] = newRecipient;
         recipientsList.push(newRecipient);
         return adr;
     }
 	
 	  function updateRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
-        var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
+       require(msg.sender == tc_master_addr);
+	    var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
         recipientsMap[adr] = newRecipient;
 		for(uint n = 0; n < recipientsList.length; n++) {
 			if(recipientsList[n].adr == newRecipient.adr) {
@@ -140,6 +142,7 @@ contract WaitingList {
     }
 */
     function removeRecipient (address a) public returns (address) {
+	    require(msg.sender == tc_master_addr);
         uint check = 0;
         for(uint i = 0; i < recipientsList.length; i++) {
             if(recipientsList[i].adr == a) { 
@@ -161,8 +164,9 @@ contract WaitingList {
     }
 
     function addOrgan(address addr, string bt, uint age, uint region, uint country) public returns (address[20]) {
+	    require(msg.sender == cc_master_addr);
         Organ memory organ = Organ(addr, bt, age, region, country);
-        // organList.push(organMap[addr]);
+        //organList.push(organMap[addr]);
         
         return makeList(organ);
     }

@@ -18,6 +18,9 @@ class WaitinglistComponent extends Component {
       addresses: []
     }
 
+    this.getRecipientList = this.getRecipientList.bind(this);
+    this.getRecipient = this.getRecipient.bind(this);
+
   }
 
   componentWillMount() {
@@ -46,22 +49,27 @@ class WaitinglistComponent extends Component {
           wlInstance: instance, 
           defaultAccount: accounts[0]
         });
-      }).then(() => this.getRecipientList());
+      });
     });
 
   }
 
+  componentDidMount() {
+    setInterval(() => { this.getRecipientList(); }, 10000);
+  }
+
   getRecipientList(){
     this.state.wlInstance.get_recipients_count.call(this.state.defaultAccount)
-  .then((result) => {
-     for (let i = 0; i < result.c[0]; i++) {
+      .then((result) => {
+      for (let i = 0; i < result.c[0]; i++) {
         this.state.wlInstance.get_recipient.call(i, this.state.defaultAccount)
-        .then((addr) => {
+          .then((addr) => {
+            console.log("addr", addr);
             this.getRecipient(addr);
         });
-    }
-  })
-}
+      }
+    });
+  }
 
   getRecipient(addr) {
     let tmpbt = null;
@@ -72,6 +80,8 @@ class WaitinglistComponent extends Component {
     let tmpage = null;
     let tmpregion = null;
     let tmpcountry = null;
+
+    console.log("in here");
 
     this.state.wlInstance.getRecipientBloodtype.call(addr, this.state.defaultAccount)
     .then((resbt) => {
@@ -101,13 +111,13 @@ class WaitinglistComponent extends Component {
     }).then((rescountry) => {
         tmpcountry = rescountry;
     }).then(() => {
-        return this.state.wlInstance.getRecipientAccMM.call (addr, this.state.defaultAccount)    
+        return this.state.wlInstance.getRecipientAccMM.call(addr, this.state.defaultAccount)    
     }).then((resam) => {
         tmpam = resam;
     }).then(() => {
-        let tmpaddr = this.state.addresses;
-        console.log("asd",             {
-            addr: addr,
+        let tmpaddrs = this.state.addresses;
+        /* {
+            address: addr,
             bt : tmpbt,
             hla: tmphla,
             am : tmpam,
@@ -115,25 +125,16 @@ class WaitinglistComponent extends Component {
             country: tmpcountry,
             region : tmpregion,
             signup: tmpsignup,
-            age: tmpage
-        }.toString())
-        tmpaddr.push(
-            {
-                addr: addr,
-                bt : tmpbt,
-                hla: tmphla,
-                am : tmpam,
-                hp: tmphp,
-                country: tmpcountry,
-                region : tmpregion,
-                signup: tmpsignup,
-                age: tmpage
-            }
-        );
+            age: tmpage 
+        }; */
+        console.log("asd", tmpaddrs);        
+        tmpaddrs.push(addr);
 
-        this.setState({
-            addresses: tmpaddr
-        });
+        console.log("asd", tmpaddrs);        
+        //this.setState({
+        //    addresses: "asd"
+        //});
+        console.log("asd", this.state);        
     });
    }
   
@@ -151,7 +152,7 @@ class WaitinglistComponent extends Component {
         <Col md="1">Sign up date</Col>
       </div>);
   for(let i = 0; this.state.addresses.length; i++) {
-    /* waitingListView.push(
+    waitingListView.push(
         <div>
         <Col md="4">this.state.addresses[i].addr</Col>
         <Col md="1">this.state.addresses[i].hal</Col>
@@ -163,13 +164,13 @@ class WaitinglistComponent extends Component {
         <Col md="1">this.state.addresses[i].am.toString()</Col>
         <Col md="1">this.state.addresses[i].signup</Col>
       </div> 
-    )*/
+    );
   }
 
     return (
       <Container fluid={true}>
         <Row>
-          {WaitingList}
+          {waitingListView}
         </Row>
       </Container>
     );

@@ -34,35 +34,37 @@ class ComponentSelector extends Component {
 
 
   componentWillMount() {
-    getWeb3.then(results => {
-      this.setState({web3: results.web3});
+    const self = this;
+    getWeb3.then(results => {;
+      self.setState({web3: results.web3});
     }).catch(() => {
-      this.props.alert.show("Could not find metamask plugin. (No web3 found).", { type: 'error'});
+      self.props.alert.show("Could not find metamask plugin. (No web3 found).", { type: 'error'});
       console.log('Error finding web3.')
     }).then(() => {
-      this.instantiateContract();
+      console.log(self.state.web)
+      self.instantiateContract(self);
     })
 
   }
 
-  instantiateContract() {
+  instantiateContract(self) {
 
      const contract = require('truffle-contract')
      const waitingList = contract(WaitingList)
-     waitingList.setProvider(this.state.web3.currentProvider)
+     waitingList.setProvider(self.state.web3.currentProvider)
 
      const ccm = contract(CoordinationCenterMaster)
-     ccm.setProvider(this.state.web3.currentProvider)
+     ccm.setProvider(self.state.web3.currentProvider)
 
      const tcm = contract(TransplantCenterMaster)
-     tcm.setProvider(this.state.web3.currentProvider)
+     tcm.setProvider(self.state.web3.currentProvider)
 
-    this.state.web3.eth.getAccounts((error, accounts) => {
+    self.state.web3.eth.getAccounts((error, accounts) => {
       waitingList.deployed().then((instance) => {
         if(instance == null) {
-          this.props.alert.show("No waiting list contract found on blockchain.", { type: 'error'});
+          self.props.alert.show("No waiting list contract found on blockchain.", { type: 'error'});
         }
-        this.setState({
+        self.setState({
           waitingListInstance: instance, 
           defaultAccount: accounts[0]
         });
@@ -81,25 +83,25 @@ class ComponentSelector extends Component {
         // CC master contract
         return instance.get_cc_master.call(accounts[0]);
       }).then((result) => {
-        this.setState({
+        self.setState({
           cc_master_address: result
         });
 
         return ccm.at(result);      
       }).then((result) => {
-        this.getMembers(result, true);
+        self.getMembers(result, true);
       }).then(() => {
         
         // TC master contract
-        return this.state.waitingListInstance.get_tc_master.call(accounts[0]);
+        return self.state.waitingListInstance.get_tc_master.call(accounts[0]);
       }).then((result) => {
-        this.setState({
+        self.setState({
           tc_master_address: result
         });
 
         return tcm.at(result);      
       }).then((result) => {
-        this.getMembers(result, false);
+        self.getMembers(result, false);
       });
     });
 

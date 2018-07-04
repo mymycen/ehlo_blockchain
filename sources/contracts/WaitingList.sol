@@ -15,7 +15,7 @@ contract WaitingList {
         bool accMM;
         uint signupDate; /*block.timestamp - seconds since unix epoch */
         bool highPriority;
-        uint age;
+        uint age;  /* in number of seconds since unix epoch */
         uint region;
         uint country;
     }
@@ -82,7 +82,7 @@ contract WaitingList {
     function get_tc_master() public view returns (address) {
         return tc_master_addr;
     }
-    //Add view?
+
     function getRecipientBloodtype(address adr) public view returns (string) {
         return recipientsMap[adr].bloodtype;
     }
@@ -115,15 +115,19 @@ contract WaitingList {
         return recipientsMap[adr].country;
     }
 
+
+
     function addRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
-        var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
+        require(msg.sender == tc_master_addr);
+	    var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
         recipientsMap[adr] = newRecipient;
         recipientsList.push(newRecipient);
         return adr;
     }
 	
 	  function updateRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
-        var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
+       require(msg.sender == tc_master_addr);
+	    var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
         recipientsMap[adr] = newRecipient;
 		for(uint n = 0; n < recipientsList.length; n++) {
 			if(recipientsList[n].adr == newRecipient.adr) {
@@ -138,27 +142,22 @@ contract WaitingList {
     }
 */
     function removeRecipient (address a) public returns (address) {
-        uint check = 0;
+	    require(msg.sender == tc_master_addr);
         for(uint i = 0; i < recipientsList.length; i++) {
             if(recipientsList[i].adr == a) { 
-                check = 1;
-                break;
+                recipientsList[i] = recipientsList[recipientsList.length - 1];
+                delete recipientsList[recipientsList.length - 1];
+                recipientsList.length--;
+                delete recipientsMap[a];
+                return a;
             }
         }
 
-        if(check == 0) {
-            return 0x0;
-        }
-
-        recipientsList[i] = recipientsList[recipientsList.length - 1];
-        delete recipientsList[recipientsList.length - 1];
-        recipientsList.length--;
-        delete recipientsMap[a];
-
-        return a;
+        return 0x0;
     }
 
     function addOrgan(address addr, string bt, uint age, uint region, uint country) public returns (address[20]) {
+	    require(msg.sender == cc_master_addr);
         Organ memory organ = Organ(addr, bt, age, region, country);
         //organList.push(organMap[addr]);
         
@@ -182,9 +181,33 @@ contract WaitingList {
         for(i = 0; i < recipientsList.length; i++) {
             uint score = calculate(organ, recipientsList[i], _ftAM, _ftMM);   
             if(score > 0) {
+			/*
+			    if(score == 10){
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0010;
+				} else if (score == 20) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0020;
+				} else if (score == 30) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0030;
+				} else if (score == 100) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0100;
+				} else if (score == 200) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0200;
+				} else if (score == 300) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0300;
+				} else if (score == 400) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0400;
+				} else if (score == 500) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0500;
+				}
+				
+				
+				return finalListAddr;
+			*/
                 list[i] = listItem(recipientsList[i].adr, score);
+
             }        
         }
+
 				
         /* Puts the 20 listItems with the highest scores in finalList. Afterwards
            finalList is an ordered list of the 20 highest scores with the highest
@@ -236,7 +259,7 @@ contract WaitingList {
         /* Merge finalList with the list of the missmatch high scores. */
         i = 0;
         for(k = 0; k < 10; k++) {
-            if(_ftMM[k].score > 0) {
+            if(_ftMM[k].addr > 0x0000000000000000000000000000000000000000) {
                 finalList = insert(finalList, _ftMM[k], i++);
             }
         }
@@ -244,7 +267,7 @@ contract WaitingList {
         /* Merge finalList with the list of the acceptabl missmatch high scores. */
         i = 0;
         for(k = 0; k < 10; k++) {
-            if(_ftAM[k].score > 0) {
+            if(_ftAM[k].addr > 0x0000000000000000000000000000000000000000) {
                 finalList = insert(finalList, _ftAM[k], i++);
             }
         }
@@ -318,8 +341,10 @@ contract WaitingList {
             } 
         }
 
+
         /* Patient matches bloodtype. Check HLA Missmatch */
-        uint HLAMiss = calcHLAMissmatch(organ, res);
+        uint HLAMiss = 0 ;/*calcHLAMissmatch(organ, res);*/
+
 
         /* If HLAMiss == 400 patient is allocated to 0-Missmatch-Allocation and gets put on 
            the fasttrack list according to waiting time. */
@@ -328,17 +353,19 @@ contract WaitingList {
             ftMM[counter_ftAM++] = listItem(res.adr, addWaitingTime(res));
             
             /* Patient added to 0-Missmatch-Allocation list. Score calculation ends.*/
-            return 0;
+            return 400;
         }
 
         /* Add score for HLA-Missmatch */
         score += HLAMiss;
+
 
         /* Add score for missmatch probability. */
         score += calcMMP(res);
 
         /* Add score for waiting time on list. */
         score += addWaitingTime(res);
+
 
         /* Add regional bonus if patient and organ are close together. */
         if(res.region == organ.region) {
@@ -347,17 +374,19 @@ contract WaitingList {
             score += 100;
         }
 
+		// return score;
+
         /* Add 500 points for high priority patients */
         if(res.highPriority == true) {
             score += 500;
         }
 
         /* Add points for children and growing adults. */
-        if(res.age <= 16) {
+        if((block.timestamp - res.age) <= 16*60*60*24*365) {
             score += HLAMiss * 2;
         }
         /* Growing adults get a bonus of 100 points. */
-        if(res.age <= 21) {
+        if((block.timestamp - res.age) <= 21*60*60*24*365) {
             score += 100;
         }
 
@@ -374,7 +403,9 @@ contract WaitingList {
     function addWaitingTime(Recipient r) private returns (uint) {
         uint  waitingTimeSec = block.timestamp - r.signupDate;
         uint  waitingTimeDays = waitingTimeSec / (60*60*24);
-        return (waitingTimeDays * 91 / 1000);
+		waitingTimeDays *= 91;
+		waitingTimeDays /= 1000;
+        return waitingTimeDays;
     }
 
 

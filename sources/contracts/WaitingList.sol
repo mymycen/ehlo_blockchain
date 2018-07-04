@@ -82,8 +82,8 @@ contract WaitingList {
     function get_tc_master() public view returns (address) {
         return tc_master_addr;
     }
-
-    function getRecipientBloodtype(address adr) public returns (string) {
+	
+	function getRecipientBloodtype(address adr) public returns (string) {
         return recipientsMap[adr].bloodtype;
     }
 
@@ -114,6 +114,8 @@ contract WaitingList {
     function getRecipientCountry(address adr) public returns (uint) {
         return recipientsMap[adr].country;
     }
+
+
 
     function addRecipient (address adr, string bt, uint hla, bool accMM, uint signup, bool hp, uint age, uint region, uint country) public returns (address) {
         var newRecipient = Recipient(adr, bt, hla, accMM, signup, hp, age, region, country);
@@ -182,9 +184,33 @@ contract WaitingList {
         for(i = 0; i < recipientsList.length; i++) {
             uint score = calculate(organ, recipientsList[i], _ftAM, _ftMM);   
             if(score > 0) {
+			/*
+			    if(score == 10){
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0010;
+				} else if (score == 20) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0020;
+				} else if (score == 30) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0030;
+				} else if (score == 100) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0100;
+				} else if (score == 200) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0200;
+				} else if (score == 300) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0300;
+				} else if (score == 400) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0400;
+				} else if (score == 500) {
+					finalListAddr[0] = 0x223432Da03B817df606d859DB1D6FEf3E05B0500;
+				}
+				
+				
+				return finalListAddr;
+			*/
                 list[i] = listItem(recipientsList[i].adr, score);
+
             }        
         }
+
 				
         /* Puts the 20 listItems with the highest scores in finalList. Afterwards
            finalList is an ordered list of the 20 highest scores with the highest
@@ -318,8 +344,10 @@ contract WaitingList {
             } 
         }
 
+
         /* Patient matches bloodtype. Check HLA Missmatch */
-        uint HLAMiss = calcHLAMissmatch(organ, res);
+        uint HLAMiss = 0 ;/*calcHLAMissmatch(organ, res);*/
+
 
         /* If HLAMiss == 400 patient is allocated to 0-Missmatch-Allocation and gets put on 
            the fasttrack list according to waiting time. */
@@ -328,11 +356,12 @@ contract WaitingList {
             ftMM[counter_ftAM++] = listItem(res.adr, addWaitingTime(res));
             
             /* Patient added to 0-Missmatch-Allocation list. Score calculation ends.*/
-            return 0;
+            return 400;
         }
 
         /* Add score for HLA-Missmatch */
         score += HLAMiss;
+
 
         /* Add score for missmatch probability. */
         score += calcMMP(res);
@@ -340,12 +369,15 @@ contract WaitingList {
         /* Add score for waiting time on list. */
         score += addWaitingTime(res);
 
+
         /* Add regional bonus if patient and organ are close together. */
         if(res.region == organ.region) {
             score += 200;
         } else if (res.country == organ.country) {
             score += 100;
         }
+
+		return score;
 
         /* Add 500 points for high priority patients */
         if(res.highPriority == true) {
@@ -374,7 +406,9 @@ contract WaitingList {
     function addWaitingTime(Recipient r) private returns (uint) {
         uint  waitingTimeSec = block.timestamp - r.signupDate;
         uint  waitingTimeDays = waitingTimeSec / (60*60*24);
-        return (waitingTimeDays * 91 / 1000);
+		waitingTimeDays *= 91;
+		waitingTimeDays /= 1000;
+        return waitingTimeDays;
     }
 
 

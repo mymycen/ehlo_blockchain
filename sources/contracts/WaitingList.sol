@@ -262,7 +262,7 @@ contract WaitingList {
         /* Merge finalList with the list of the missmatch high scores. */
         i = 0;
         for(k = 0; k < 10; k++) {
-            if(_ftMM[k].score > 0) {
+            if(_ftMM[k].addr > 0x0000000000000000000000000000000000000000) {
                 finalList = insert(finalList, _ftMM[k], i++);
             }
         }
@@ -270,7 +270,7 @@ contract WaitingList {
         /* Merge finalList with the list of the acceptabl missmatch high scores. */
         i = 0;
         for(k = 0; k < 10; k++) {
-            if(_ftAM[k].score > 0) {
+            if(_ftAM[k].addr > 0x0000000000000000000000000000000000000000) {
                 finalList = insert(finalList, _ftAM[k], i++);
             }
         }
@@ -377,7 +377,7 @@ contract WaitingList {
             score += 100;
         }
 
-		return score;
+		// return score;
 
         /* Add 500 points for high priority patients */
         if(res.highPriority == true) {

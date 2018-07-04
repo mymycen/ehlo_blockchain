@@ -143,24 +143,17 @@ contract WaitingList {
 */
     function removeRecipient (address a) public returns (address) {
 	    require(msg.sender == tc_master_addr);
-        uint check = 0;
         for(uint i = 0; i < recipientsList.length; i++) {
             if(recipientsList[i].adr == a) { 
-                check = 1;
-                break;
+                recipientsList[i] = recipientsList[recipientsList.length - 1];
+                delete recipientsList[recipientsList.length - 1];
+                recipientsList.length--;
+                delete recipientsMap[a];
+                return a;
             }
         }
 
-        if(check == 0) {
-            return 0x0;
-        }
-
-        recipientsList[i] = recipientsList[recipientsList.length - 1];
-        delete recipientsList[recipientsList.length - 1];
-        recipientsList.length--;
-        delete recipientsMap[a];
-
-        return a;
+        return 0x0;
     }
 
     function addOrgan(address addr, string bt, uint age, uint region, uint country) public returns (address[20]) {

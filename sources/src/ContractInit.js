@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Container from 'muicss/lib/react/container';
 import Colloquium from './Colloquium';
 import Organ from './Organ';
-import AddRecipient from './AddRecipient';
+import Recipient from './Recipient';
 import Input from 'muicss/lib/react/input';
 import Button from 'muicss/lib/react/button';
 import { withAlert } from 'react-alert';
@@ -74,7 +74,7 @@ class ContractInit extends Component {
         mainForm = <Organ cc={this.state.contractAddr}></Organ>
       } 
       else if (this.props.type == "tc") {
-        mainForm = <AddRecipient tc={this.state.contractAddr}></AddRecipient>
+        mainForm = <Recipient tc={this.state.contractAddr}></Recipient>
       }
     }
 

@@ -126,18 +126,25 @@ class Organ extends Component {
     if(this.state.visible) {
       let patients = [];
       for (let i=0; i<this.state.matching.length; i++) {
-        patients.push(<li><a href="#">{this.state.matching[i]}</a></li>);
+        if(this.state.matching[i] != "0x0000000000000000000000000000000000000000") {
+          patients.push(<li><strong>{this.state.matching[i]}</strong></li>);
+        }
+      }
+
+      if(patients.length == 0) {
+        patients = "No match found."
       }
 
       resultView = 
-        <div>
+        <div className="mui-panel">
           <div className="mui--text-headline">Matches</div>
-          <div className="mui--text-button">KIDNEY, {this.state.organBt}, {this.state.organAge}, {this.state.organState}, {this.state.organCountry}</div>
-          <ul> {patients} </ul>
+          <ol> {patients} </ol>
         </div>
     }
 
     return (
+      <div>
+      {resultView}
       <div className="mui-panel">
       <Form onSubmit={this.onSubmit.bind(this)}>
         <legend>New organ</legend>
@@ -164,7 +171,7 @@ class Organ extends Component {
         </Select>
         <div className="mui--text-right"><Button color="primary" variant="raised">Submit</Button></div>
       </Form>
-      {resultView}
+      </div>
       </div>
       );
   }

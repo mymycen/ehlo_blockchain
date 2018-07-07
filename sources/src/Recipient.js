@@ -78,13 +78,15 @@ class Recipient extends Component {
     const bt = this.getBT();
     const hal = this.getHal();
     const signUpDate = this.getSecondsSinceEpoch();
+    console.log(this.selectAgeYear.controlEl.value, this.selectAgeMonth.controlEl.value, this.selectAgeDay.controlEl.value);
+    const age = Date.UTC(this.selectAgeYear.controlEl.value, this.selectAgeMonth.controlEl.value, this.selectAgeDay.controlEl.value) / 1000;
 
     console.log("Patient data: ")
     console.log("address:",this.inputPatientAddress.controlEl.value);
     console.log("bt:", bt);
     console.log("hal:", hal);
     console.log("Acceptable Missmatch: ", this.checkAccMM.controlEl.checked);
-    console.log("age:", this.inputAge.controlEl.value);
+    console.log("age:", age);
     console.log("state:", this.selectState.controlEl.value);
     console.log("high priority:", this.checkHP.controlEl.checked);
     console.log("country:", this.selectCountry.controlEl.value);
@@ -97,7 +99,7 @@ class Recipient extends Component {
       this.checkAccMM.controlEl.checked,
       signUpDate,
       this.checkHP.controlEl.checked,
-      this.inputAge.controlEl.value,
+      age,
       this.selectState.controlEl.value,
       this.selectCountry.controlEl.value,
       {from: this.state.defaultAccount}
@@ -108,7 +110,7 @@ class Recipient extends Component {
         matching: result,
         visible: true,
         patientAddress: this.inputPatientAddress.controlEl.value,
-        patientAge: this.inputAge.controlEl.value,
+        patientAge: age,
         patientAccMM: this.checkAccMM.controlEl.checked,
         patientBT: bt,
         patientHal: hal,
@@ -181,6 +183,14 @@ class Recipient extends Component {
     return 0;
   }
 
+  utcSecondsToDateString(utcSeconds) {
+    var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+    d.setUTCSeconds(utcSeconds);
+    var n = d.toISOString();
+    var date = n.slice(0,10);
+    return date;
+  }
+
   render() {
     let resultView;
 
@@ -195,10 +205,20 @@ class Recipient extends Component {
         <div className="mui-panel">
           <div className="mui--text-headline">Added patient</div>
           <strong>{ this.state.patientAddress }</strong>
-          , { this.state.patientAge }
+          , { this.utcSecondsToDateString(this.state.patientAge) }
           , Bloodtype: { this.state.patientBT }<br/>
           { ciriticalView }
         </div>
+    }
+    
+    let optYear = []
+    for (var i = (new Date()).getFullYear(); i >= 1970; i--) {
+      optYear.push(<Option value={i} label={i} />);
+    }
+
+    let optDay = []
+    for (var i = 1; i <= 31; i++) {
+      optDay.push(<Option value={i} label={i} />);
     }
 
     return (
@@ -224,7 +244,35 @@ class Recipient extends Component {
           </div>
           <div>
             <div>
-            <Input ref={el => { this.inputAge = el; }} label="Age" type="number" floatingLabel={true}  required={true}/>
+            <legend>Birthday:</legend>
+            <Row>
+            <Col md="4">
+            <Select ref={el => { this.selectAgeDay = el; }} name="input" label="Day" defaultValue="option1">
+              { optDay }
+            </Select>
+            </Col>
+            <Col md="4">
+            <Select ref={el => { this.selectAgeMonth = el; }} name="input" label="Month" defaultValue="option1">
+              <Option value="0" label="January"/>
+              <Option value="1" label="February"/>
+              <Option value="2" label="March"/>
+              <Option value="3" label="April"/>
+              <Option value="4" label="May"/>
+              <Option value="5" label="June"/>
+              <Option value="6" label="July"/>
+              <Option value="7" label="August"/>
+              <Option value="8" label="Sebtemper"/>
+              <Option value="9" label="October"/>
+              <Option value="10" label="November"/>
+              <Option value="11" label="December"/>
+            </Select>
+            </Col>
+            <Col md="4">
+            <Select ref={el => { this.selectAgeYear = el; }} name="input" label="Year" defaultValue="option1">
+              { optYear }
+            </Select>
+            </Col>
+            </Row>
             </div>
           </div>
           <div>

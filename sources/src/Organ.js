@@ -72,18 +72,19 @@ class Organ extends Component {
   onSubmit(ev) {
     ev.preventDefault();  // prevent form submission
     const bt = this.getBT();
+    const age = Date.UTC(this.selectAgeYear.controlEl.value, this.selectAgeMonth.controlEl.value, this.selectAgeDay.controlEl.value) / 1000;
 
     console.log("Sending organ: ")
-    console.log("address:",this.inputPatientAddress.controlEl.value);
+    console.log("address:","0x0000000000000000000000000000000000000000");
     console.log("bt:", bt);
-    console.log("age:", this.inputAge.controlEl.value);
+    console.log("age:", age);
     console.log("state:", this.selectState.controlEl.value);
     console.log("country:", this.selectCountry.controlEl.value);
     
     this.state.ccInstance.addOrgan.call(
-      this.inputPatientAddress.controlEl.value,
+      "0x0000000000000000000000000000000000000000",
       bt,
-      this.inputAge.controlEl.value,
+      age,
       this.selectState.controlEl.value,
       this.selectCountry.controlEl.value,
       {from: this.state.defaultAccount}
@@ -93,8 +94,8 @@ class Organ extends Component {
       this.setState({
         matching: list,
         visible: true,
-        patientAddress: this.inputPatientAddress.controlEl.value,
-        organAge: this.inputAge.controlEl.value,
+        patientAddress: "0x0000000000000000000000000000000000000000",
+        organAge: age,
         organBT: bt,
         organState: this.selectState.controlEl.value,
         organCountry: this.selectCountry.controlEl.value
@@ -142,13 +143,22 @@ class Organ extends Component {
         </div>
     }
 
+    let optYear = []
+    for (var i = (new Date()).getFullYear(); i >= 1970; i--) {
+      optYear.push(<Option value={i} label={i} />);
+    }
+
+    let optDay = []
+    for (var i = 1; i <= 31; i++) {
+      optDay.push(<Option value={i} label={i} />);
+    }
+
     return (
       <div>
       {resultView}
       <div className="mui-panel">
       <Form onSubmit={this.onSubmit.bind(this)}>
         <legend>New organ</legend>
-        <Input ref={el => { this.inputPatientAddress = el; }} label="Patient address" floatingLabel={true}/>
         Bloodtype:
         <Row>
         <Col md="1"><Radio ref={el => { this.radioBloodTypeA = el; }} name="bt" label="A" defaultChecked={true} /></Col>
@@ -156,7 +166,37 @@ class Organ extends Component {
         <Col md="1"><Radio ref={el => { this.radioBloodTypeAB = el; }} name="bt" label="AB" /></Col>
         <Col md="1"><Radio ref={el => { this.radioBloodType0 = el; }} name="bt" label="0" /></Col>
         </Row>
-        <Input ref={el => { this.inputAge = el; }} label="Age" type="number" floatingLabel={true}/>
+
+        Birthday of patient:
+        <Row>
+        <Col md="4">
+        <Select ref={el => { this.selectAgeDay = el; }} name="input" label="Day" defaultValue="option1">
+          { optDay }
+        </Select>
+        </Col>
+        <Col md="4">
+        <Select ref={el => { this.selectAgeMonth = el; }} name="input" label="Month" defaultValue="option1">
+          <Option value="0" label="January"/>
+          <Option value="1" label="February"/>
+          <Option value="2" label="March"/>
+          <Option value="3" label="April"/>
+          <Option value="4" label="May"/>
+          <Option value="5" label="June"/>
+          <Option value="6" label="July"/>
+          <Option value="7" label="August"/>
+          <Option value="8" label="Sebtemper"/>
+          <Option value="9" label="October"/>
+          <Option value="10" label="November"/>
+          <Option value="11" label="December"/>
+        </Select>
+        </Col>
+        <Col md="4">
+        <Select ref={el => { this.selectAgeYear = el; }} name="input" label="Year" defaultValue="option1">
+          { optYear }
+        </Select>
+        </Col>
+        </Row>
+
         <Select ref={el => { this.selectCountry = el; }} name="input" label="Country" defaultValue="option2">
           <Option value="1" label="France" disabled="true"/>
           <Option value="2" label="Germany" />

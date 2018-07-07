@@ -18,13 +18,10 @@ class WaitinglistComponent extends Component {
       addresses: []
     }
 
-    this.getRecipientList = this.getRecipientList.bind(this);
-    this.getRecipient = this.getRecipient.bind(this);
-
   }
 
   componentWillMount() {
-    getWeb3.then(results => {
+    getWeb3().then(results => {
       this.setState({web3: results.web3});
     }).catch(() => {
       this.props.alert.show("Could not find metamask plugin. (No web3 found).", { type: 'error'});
@@ -34,7 +31,7 @@ class WaitinglistComponent extends Component {
     })
    }
     
-   instantiateContract() {
+   instantiateContract = () => {
 
      const contract = require('truffle-contract')
      const wl = contract(WaitingList)
@@ -44,19 +41,21 @@ class WaitinglistComponent extends Component {
         wl.deployed().then((instance) => {
         if(instance == null) {
           this.props.alert.show("No Waitinglist contract found on blockchain.", { type: 'error'});
-        }
+        } 
         this.setState({
           wlInstance: instance, 
           defaultAccount: accounts[0]
         });
+
+        this.getRecipientList();
       });
     });
 
   }
 
-  componentDidMount() {
+  /*componentDidMount() {
     setInterval(() => { this.getRecipientList(); }, 10000);
-  }
+  }*/
 
   getRecipientList(){
     this.state.wlInstance.get_recipients_count.call(this.state.defaultAccount)
@@ -65,7 +64,14 @@ class WaitinglistComponent extends Component {
         this.state.wlInstance.get_recipient.call(i, this.state.defaultAccount)
           .then((addr) => {
             console.log("addr", addr);
-            this.getRecipient(addr);
+            let tmpaddrs = this.state.addresses;
+            tmpaddrs.push(addr);
+            this.setState({
+              addresses: tmpaddrs
+            });
+            console.log("setState");
+            //this.getRecipient(addr);
+            console.log("xD");
         });
       }
     });
@@ -116,7 +122,7 @@ class WaitinglistComponent extends Component {
         tmpam = resam;
     }).then(() => {
         let tmpaddrs = this.state.addresses;
-        /* {
+        let obj = {
             address: addr,
             bt : tmpbt,
             hla: tmphla,
@@ -126,14 +132,14 @@ class WaitinglistComponent extends Component {
             region : tmpregion,
             signup: tmpsignup,
             age: tmpage 
-        }; */
+        };
         console.log("asd", tmpaddrs);        
-        tmpaddrs.push(addr);
+        tmpaddrs.push(obj);
 
         console.log("asd", tmpaddrs);        
-        //this.setState({
-        //    addresses: "asd"
-        //});
+        this.setState({
+            addresses: tmpaddrs
+        });
         console.log("asd", this.state);        
     });
    }
@@ -161,7 +167,7 @@ class WaitinglistComponent extends Component {
         <Col md="1">this.state.addresses[i].country</Col>
         <Col md="1">this.state.addresses[i].state</Col>
         <Col md="1">this.state.addresses[i].hp</Col>
-        <Col md="1">this.state.addresses[i].am.toString()</Col>
+        <Col md="1">this.state.addresses[i].am</Col>
         <Col md="1">this.state.addresses[i].signup</Col>
       </div> 
     );

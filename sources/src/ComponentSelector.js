@@ -4,7 +4,7 @@ import Tab from 'muicss/lib/react/tab';
 import Container from 'muicss/lib/react/container'
 import ContractInit from './ContractInit';
 import getWeb3 from './utils/getWeb3';
-import WaitinglistComponent from './WaitinglistComponent';
+import WaitingListView from './WaitingListView';
 import WaitingList from '../build/contracts/WaitingList.json';
 import CoordinationCenter from '../build/contracts/CoordinationCenter.json';
 import CoordinationCenterMaster from '../build/contracts/CoordinationCenterMaster.json';
@@ -68,17 +68,6 @@ class ComponentSelector extends Component {
           waitingListInstance: instance, 
           defaultAccount: accounts[0]
         });
-
-        instance.get_recipients_count.call(accounts[0]).then((patientCount) => {
-          console.log("waiting list count: ", patientCount.c);
-          if(patientCount.c > 0) {
-            return instance.get_recipient(patientCount.c - 1);
-          } else {
-            return "no patients on the waiting list.";
-          }
-        }).then((addr => {
-          console.log("last patient on list: ", addr);
-        }))
 
         // CC master contract
         return instance.get_cc_master.call(accounts[0]);
@@ -149,7 +138,7 @@ class ComponentSelector extends Component {
       	  	<ContractInit label="Transplantation Center" type="tc" master={this.state.tc_master_address} slaves={this.state.tc_addresses}></ContractInit>
       	  </Tab>
       	  <Tab value="pane-3" label="Waiting List">
-      	    <WaitinglistComponent></WaitinglistComponent>
+      	    <WaitingListView></WaitingListView>
       	  </Tab>
       	</Tabs>
       </Container>

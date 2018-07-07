@@ -42,19 +42,19 @@ class WaitingListView extends Component {
   }
 
   utcSecondsToTimeString(utcSeconds) {
-	var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-	d.setUTCSeconds(utcSeconds);
-	var n = d.toISOString();
-	var time = n.slice(11,19);
-	return time;
+	 var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+	 d.setUTCSeconds(utcSeconds);
+	 var n = d.toISOString();
+	 var time = n.slice(11,19);
+	 return time;
   }
 
   utcSecondsToDateString(utcSeconds) {
-	var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-	d.setUTCSeconds(utcSeconds);
-	var n = d.toISOString();
-	var date = n.slice(0,10);
-	return date;
+	 var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+	 d.setUTCSeconds(utcSeconds);
+	 var n = d.toISOString();
+	 var date = n.slice(0,10);
+	 return date;
   }
 
 
@@ -136,7 +136,7 @@ class WaitingListView extends Component {
     }).then(() => {
         return this.state.waitingListInstance.getRecipientAge.call(addr, this.state.defaultAccount)
     }).then((resage) => {
-        tmpage = resage.c[0];
+        tmpage = this.utcSecondsToDateString(resage.c[0]);
     }).then(() => {
         return this.state.waitingListInstance.getRecipientRegion.call(addr, this.state.defaultAccount)
     }).then((resregion) => {

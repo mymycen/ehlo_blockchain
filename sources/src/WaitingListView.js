@@ -107,7 +107,7 @@ class WaitingListView extends Component {
   	}
   }
 
-  getRecipient(addr) {
+  getRecipient(addr, map) {
     let tmpbt = null;
     let tmphla= null;
     let tmpam = false;
@@ -117,7 +117,7 @@ class WaitingListView extends Component {
     let tmpregion = null;
     let tmpcountry = null;
 
-    this.state.waitingListInstance.getRecipientBloodtype.call(addr, this.state.defaultAccount)
+    return this.state.waitingListInstance.getRecipientBloodtype.call(addr, this.state.defaultAccount)
     .then((resbt) => {
         tmpbt = resbt;
     }).then(() => {
@@ -150,7 +150,6 @@ class WaitingListView extends Component {
     }).then((resam) => {
         tmpam = resam;
     }).then(() => {
-        let tmpaddrs = this.state.wlMembers;
         let obj = {
             address: addr,
             bt : tmpbt,
@@ -162,8 +161,7 @@ class WaitingListView extends Component {
             signup: tmpsignup,
             age: tmpage 
         };
-        tmpaddrs.set(addr, obj);
-		this.setState({wlMembers: tmpaddrs});
+        map.set(addr, obj); 
     });
    }
 
@@ -192,21 +190,26 @@ class WaitingListView extends Component {
     setInterval(this.getMembers, 5000);
   }
 
-  updateMember(position, waitingList) {
-    waitingList.get_recipient.call(position, this.state.defaultAccount)
+  updateMember(position, waitingList, map) {
+    return waitingList.get_recipient.call(position, this.state.defaultAccount)
     .then((result) => {
-    	this.getRecipient(result);
-    })
+    	return this.getRecipient(result, map);
+    });
   }
 
   getMembers() {
   	const waitingList = this.state.waitingListInstance;
-    this.setState({wlMembers: new Map()})
     waitingList.get_recipients_count.call(this.state.defaultAccount)
     .then((result) => {
+      let map = new Map();
+      let callbacks = [];
       for (let i = 0; i < result.c[0]; i++) {
-        this.updateMember(i, waitingList);
+        callbacks.push(this.updateMember(i, waitingList, map));
       }
+
+      Promise.all(callbacks).then(() => {
+        this.setState({wlMembers: map});
+      });
     })
   }
 

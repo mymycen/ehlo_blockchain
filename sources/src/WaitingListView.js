@@ -201,6 +201,7 @@ class WaitingListView extends Component {
 
   getMembers() {
   	const waitingList = this.state.waitingListInstance;
+    this.setState({wlMembers: new Map()})
     waitingList.get_recipients_count.call(this.state.defaultAccount)
     .then((result) => {
       for (let i = 0; i < result.c[0]; i++) {

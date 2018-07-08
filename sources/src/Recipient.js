@@ -155,8 +155,8 @@ class Recipient extends Component {
     if(this.radioBloodTypeAB.controlEl.checked) {
       return "AB";
     }
-    if(this.radioBloodTypeO.controlEl.checked) {
-      return "O";
+    if(this.radioBloodType0.controlEl.checked) {
+      return "0";
     }
     return null;
   }

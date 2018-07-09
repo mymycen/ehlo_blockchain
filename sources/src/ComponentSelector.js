@@ -4,6 +4,7 @@ import Tab from 'muicss/lib/react/tab';
 import Container from 'muicss/lib/react/container'
 import ContractInit from './ContractInit';
 import getWeb3 from './utils/getWeb3';
+import WaitingListView from './WaitingListView';
 import WaitingList from '../build/contracts/WaitingList.json';
 import CoordinationCenter from '../build/contracts/CoordinationCenter.json';
 import CoordinationCenterMaster from '../build/contracts/CoordinationCenterMaster.json';
@@ -33,72 +34,63 @@ class ComponentSelector extends Component {
 
 
   componentWillMount() {
-    getWeb3.then(results => {
-      this.setState({web3: results.web3});
+    const self = this;
+    getWeb3.then(results => {;
+      self.setState({web3: results.web3});
     }).catch(() => {
-      this.props.alert.show("Could not find metamask plugin. (No web3 found).", { type: 'error'});
+      self.props.alert.show("Could not find metamask plugin. (No web3 found).", { type: 'error'});
       console.log('Error finding web3.')
     }).then(() => {
-      this.instantiateContract();
+      console.log(self.state.web)
+      self.instantiateContract(self);
     })
 
   }
 
-  instantiateContract() {
+  instantiateContract(self) {
 
      const contract = require('truffle-contract')
      const waitingList = contract(WaitingList)
-     waitingList.setProvider(this.state.web3.currentProvider)
+     waitingList.setProvider(self.state.web3.currentProvider)
 
      const ccm = contract(CoordinationCenterMaster)
-     ccm.setProvider(this.state.web3.currentProvider)
+     ccm.setProvider(self.state.web3.currentProvider)
 
      const tcm = contract(TransplantCenterMaster)
-     tcm.setProvider(this.state.web3.currentProvider)
+     tcm.setProvider(self.state.web3.currentProvider)
 
-    this.state.web3.eth.getAccounts((error, accounts) => {
+    self.state.web3.eth.getAccounts((error, accounts) => {
       waitingList.deployed().then((instance) => {
         if(instance == null) {
-          this.props.alert.show("No waiting list contract found on blockchain.", { type: 'error'});
+          self.props.alert.show("No waiting list contract found on blockchain.", { type: 'error'});
         }
-        this.setState({
+        self.setState({
           waitingListInstance: instance, 
           defaultAccount: accounts[0]
         });
 
-        instance.get_recipients_count.call(accounts[0]).then((patientCount) => {
-          console.log("waiting list count: ", patientCount.c);
-          if(patientCount.c > 0) {
-            return instance.get_recipient(patientCount.c - 1);
-          } else {
-            return "no patients on the waiting list.";
-          }
-        }).then((addr => {
-          console.log("last patient on list: ", addr);
-        }))
-
         // CC master contract
         return instance.get_cc_master.call(accounts[0]);
       }).then((result) => {
-        this.setState({
+        self.setState({
           cc_master_address: result
         });
 
         return ccm.at(result);      
       }).then((result) => {
-        this.getMembers(result, true);
+        self.getMembers(result, true);
       }).then(() => {
+        
         // TC master contract
-
-        return this.state.waitingListInstance.get_tc_master.call(accounts[0]);
+        return self.state.waitingListInstance.get_tc_master.call(accounts[0]);
       }).then((result) => {
-        this.setState({
+        self.setState({
           tc_master_address: result
         });
 
         return tcm.at(result);      
       }).then((result) => {
-        this.getMembers(result, false);
+        self.getMembers(result, false);
       });
     });
 
@@ -146,7 +138,7 @@ class ComponentSelector extends Component {
       	  	<ContractInit label="Transplantation Center" type="tc" master={this.state.tc_master_address} slaves={this.state.tc_addresses}></ContractInit>
       	  </Tab>
       	  <Tab value="pane-3" label="Waiting List">
-      	    Not implemented yet.
+      	    <WaitingListView></WaitingListView>
       	  </Tab>
       	</Tabs>
       </Container>
